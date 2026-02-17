@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #FFFEF9;
+  --color-cream-dark: #F7F5F2;
+  --color-cream-darker: #EBE7E0;
+  --color-sand: #E8E4DD;
+  --color-sand-dark: #D4CFC6;
+  --color-stone: #B5AFA3;
+  --color-stone-dark: #A09A8E;
+  --color-earth: #8A8479;
+  --color-bark: #6B6660;
+  --color-ink: #3D3A36;
+  --color-ink-dark: #2D2A26;
+  --color-green: #2D5A4A;
+
+  --font-serif: "Libre Baskerville", Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-serif);
+  background: linear-gradient(180deg, var(--color-cream-dark) 0%, var(--color-cream-darker) 100%);
+  min-height: 100vh;
+}
+
+/* Paper texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--color-stone);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-stone);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInFast {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes unfold {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92) rotateX(-8deg); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotateX(0deg); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-fade-in-fast {
+  animation: fadeInFast 0.2s ease-out;
+}
+
+.animate-fade-in-delay {
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-pulse-dot {
+  animation: pulse 1s ease-in-out infinite;
+}
