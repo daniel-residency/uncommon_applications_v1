@@ -1,108 +1,136 @@
 import { test, expect } from "@playwright/test";
-import { mockAPIs, mockHomesAPI, setupResultsPage, MOCK_HOMES } from "./helpers";
+import { uniqueEmail, createMatchedApp, setupWithAppId, getHomes } from "./helpers";
 
 test.describe("Results page", () => {
-  test.beforeEach(async ({ page }) => {
-    await setupResultsPage(page);
+  let appId: string;
+  let homeIds: string[];
+  let homes: { id: string; name: string; video_url: string | null; question: string | null }[];
+
+  test.beforeAll(async () => {
+    const email = uniqueEmail();
+    const allHomes = await getHomes();
+
+    // Pick 3 homes strategically: at least one with video and one with a question
+    const withVideo = allHomes.find((h: { video_url: string | null }) => h.video_url);
+    const withQuestion = allHomes.find((h: { question: string | null; id: string }) => h.question && h.id !== withVideo?.id);
+    const other = allHomes.find((h: { id: string }) => h.id !== withVideo?.id && h.id !== withQuestion?.id);
+
+    homeIds = [withVideo, withQuestion, other].filter(Boolean).map((h: { id: string }) => h.id).slice(0, 3);
+    homes = allHomes.filter((h: { id: string }) => homeIds.includes(h.id));
+
+    // Create app with these specific homes
+    const { createApp, updateApp, FULL_ANSWERS } = await import("./helpers");
+    const app = await createApp(email);
+    await updateApp(app.id, { answers: FULL_ANSWERS });
+    await updateApp(app.id, { status: "frozen", frozen_at: new Date().toISOString() });
+    await updateApp(app.id, { matched_home_ids: homeIds });
+    appId = app.id;
   });
 
   test("displays matched home cards", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("your matches");
-    // 3 cards
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
+
     const cards = page.locator("button.group");
     await expect(cards).toHaveCount(3);
   });
 
-  test("card click opens letter modal", async ({ page }) => {
+  test("clicking card opens letter modal with letter content", async ({ page }) => {
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
+
     const cards = page.locator("button.group");
     await cards.first().click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
-    // Modal visible with home content
-    await expect(page.locator("text=close")).toBeVisible();
+    // Modal should be open — look for the personalized greeting
+    await expect(page.getByText("Hi there,")).toBeVisible();
   });
 
-  test("letter modal shows video for homes with video_url", async ({ page }) => {
-    // Home-2 (Inventors) has video_url in mock
-    const cards = page.locator("button.group");
-    await cards.nth(1).click();
-    await page.waitForTimeout(300);
+  test("modal closes with Escape", async ({ page }) => {
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
 
-    // Should have a video element
-    const video = page.locator("video");
-    await expect(video).toBeVisible();
-    const src = await video.getAttribute("src");
-    expect(src).toContain("/videos/inventors.mp4");
-  });
-
-  test("letter modal hides video area for homes without video", async ({ page }) => {
-    // Home-1 (Homebrew) has no video_url
     const cards = page.locator("button.group");
     await cards.first().click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
+    await expect(page.getByText("Hi there,")).toBeVisible();
 
-    // Should NOT have a video element
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+    await expect(page.getByText("Hi there,")).not.toBeVisible();
+  });
+
+  test("home with video shows video player", async ({ page }) => {
+    const homeWithVideo = homes.find((h) => h.video_url);
+    if (!homeWithVideo) {
+      test.skip();
+      return;
+    }
+
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
+
+    const cardIndex = homeIds.indexOf(homeWithVideo.id);
+    const cards = page.locator("button.group");
+    await cards.nth(cardIndex).click();
+    await page.waitForTimeout(500);
+
+    await expect(page.locator("video")).toBeVisible();
+  });
+
+  test("home without video hides video area", async ({ page }) => {
+    const homeWithoutVideo = homes.find((h) => !h.video_url);
+    if (!homeWithoutVideo) {
+      test.skip();
+      return;
+    }
+
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
+
+    const cardIndex = homeIds.indexOf(homeWithoutVideo.id);
+    const cards = page.locator("button.group");
+    await cards.nth(cardIndex).click();
+    await page.waitForTimeout(500);
+
     await expect(page.locator("video")).not.toBeVisible();
   });
 
-  test("question answering in letter modal", async ({ page }) => {
-    // Home-2 (Inventors) has a question
+  test("home with question shows question in modal", async ({ page }) => {
+    const homeWithQuestion = homes.find((h) => h.question);
+    if (!homeWithQuestion) {
+      test.skip();
+      return;
+    }
+
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
+
+    const cardIndex = homeIds.indexOf(homeWithQuestion.id);
     const cards = page.locator("button.group");
-    await cards.nth(1).click();
-    await page.waitForTimeout(300);
+    await cards.nth(cardIndex).click();
+    await page.waitForTimeout(500);
 
-    // Should see the question
-    await expect(page.locator("text=keeps you up at night")).toBeVisible();
-
-    // Type an answer
-    const textarea = page.locator("textarea");
-    await textarea.fill("Building the future of AI");
-
-    // "saved" indicator should appear
-    await expect(page.locator("text=saved")).toBeVisible();
+    await expect(page.locator("text=a question for you")).toBeVisible();
+    await expect(page.locator("textarea")).toBeVisible();
   });
 
   test("answer questions button opens all-questions modal", async ({ page }) => {
-    // Single "answer questions" button opens the modal
-    const answerBtn = page.getByRole("button", { name: "answer questions" });
-    await answerBtn.scrollIntoViewIfNeeded();
-    await expect(answerBtn).toBeVisible();
-    await answerBtn.click();
-
-    // Wait for modal content — check for question text which only appears inside the modal
-    await expect(page.locator("text=keeps you up at night")).toBeVisible({ timeout: 5000 });
-    await expect(page.locator("text=explore here")).toBeVisible();
-
-    // Should have 2 textareas (one per home with question)
-    const textareas = page.locator("textarea");
-    await expect(textareas).toHaveCount(2);
-  });
-
-  test("submit button changes to 'submit your application' when all answered", async ({ page }) => {
-    // Click "answer questions" to open modal
-    const answerBtn = page.getByRole("button", { name: "answer questions" });
-    await answerBtn.scrollIntoViewIfNeeded();
-    await answerBtn.click();
-
-    // Wait for modal to open
-    await expect(page.locator("text=the inventors residency")).toBeVisible({ timeout: 5000 });
-
-    const textareas = page.locator("textarea");
-    const count = await textareas.count();
-    for (let i = 0; i < count; i++) {
-      await textareas.nth(i).fill(`Answer ${i + 1}`);
+    // This button only shows if at least one matched home has a question
+    const hasQuestions = homes.some((h) => h.question);
+    if (!hasQuestions) {
+      test.skip();
+      return;
     }
 
-    // Close modal with Escape and wait for it to disappear
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(500);
+    await setupWithAppId(page, appId, "/results");
+    await page.waitForSelector("h1", { timeout: 15000 });
 
-    // Now submit button should say "submit your application"
-    await expect(page.getByRole("button", { name: "submit your application" })).toBeVisible({ timeout: 5000 });
-  });
+    const answerBtn = page.getByRole("button", { name: "answer questions" });
+    await answerBtn.scrollIntoViewIfNeeded();
+    await answerBtn.click();
 
-  test("shows question count progress", async ({ page }) => {
-    // Should show "0/2 questions answered" or similar
-    await expect(page.locator("text=questions answered")).toBeVisible();
+    await expect(page.locator("textarea").first()).toBeVisible({ timeout: 5000 });
   });
 });

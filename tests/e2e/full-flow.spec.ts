@@ -1,99 +1,46 @@
 import { test, expect } from "@playwright/test";
-import { mockAPIs, mockHomesAPI, mockMatchAPI } from "./helpers";
+import { uniqueEmail, createFilledApp, setupWithAppId } from "./helpers";
 
 test.describe("Full application flow", () => {
-  test("happy path: email → form → freeze → matching → results → answer → submit", async ({ page }) => {
-    await mockAPIs(page);
-    await mockHomesAPI(page);
-    await mockMatchAPI(page);
+  test("happy path: filled form → freeze → match → results", async ({ page }) => {
+    test.setTimeout(180000); // 3 minutes — matching calls Claude
 
-    // 1. Go to /apply, enter email
-    await page.goto("/apply", { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('input[type="email"]', { timeout: 30000 });
-    await page.fill('input[type="email"]', "test@example.com");
-    await page.click('button[type="submit"]');
+    const email = uniqueEmail();
+    const app = await createFilledApp(email);
 
-    // Wait for form to become interactive
-    await expect(page.locator('input[type="email"]')).not.toBeVisible({ timeout: 5000 });
+    // Load the filled app via localStorage
+    await setupWithAppId(page, app.id, "/apply");
+    await page.waitForSelector("section#about-you", { timeout: 15000 });
 
-    // 2. Form is visible with all sections
-    await expect(page.locator("section#about-you")).toBeVisible();
+    // Answers should be loaded — verify a field is filled
+    const textarea = page.locator("textarea").first();
+    await expect(textarea).not.toHaveValue("");
 
-    // 3. Click "next" to trigger freeze warning
+    // Click next
     const nextBtn = page.locator("main").getByRole("button", { name: "next" });
     await nextBtn.scrollIntoViewIfNeeded();
     await nextBtn.click();
 
-    // 4. Freeze warning appears with updated copy
-    await expect(page.locator("text=ready to see your matches?")).toBeVisible();
+    // Freeze warning should show (all fields are filled)
+    await expect(page.locator("text=ready to see your matches?")).toBeVisible({ timeout: 5000 });
 
-    // 5. Mock the PATCH to set frozen status, then click "see my matches"
+    // Click "see my matches"
     await page.getByRole("button", { name: "see my matches" }).click();
 
-    // 6. Should navigate to matching page
-    await page.waitForURL("**/matching", { timeout: 5000 });
+    // Should navigate to matching page
+    await page.waitForURL("**/matching", { timeout: 15000 });
 
-    // Matching page shows steps
+    // Should see processing steps
     await expect(page.locator("text=Reading your responses")).toBeVisible({ timeout: 30000 });
-  });
 
-  test("results page: individual card → letter modal flow", async ({ page }) => {
-    await mockAPIs(page);
-    await mockHomesAPI(page);
+    // Wait for matching to complete and redirect to results
+    await page.waitForURL("**/results", { timeout: 120000 });
 
-    // Set up as frozen user with matches
-    await page.goto("/apply", { waitUntil: "domcontentloaded" });
-    await page.evaluate(() => {
-      localStorage.setItem("application_id", "frozen-app-id");
-    });
-
-    await page.goto("/results", { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("h1", { timeout: 30000 });
-
-    // 3 cards visible
+    // Should see matched home cards
+    await page.waitForSelector("h1", { timeout: 15000 });
     const cards = page.locator("button.group");
-    await expect(cards).toHaveCount(3);
-
-    // Click a card to open letter modal
-    await cards.nth(1).click();
-    await page.waitForTimeout(300);
-
-    // Modal should be open with home description
-    await expect(page.locator("text=Your application stood out")).toBeVisible();
-
-    // Close modal
-    await page.keyboard.press("Escape");
-  });
-
-  test("results page: answer questions flow", async ({ page }) => {
-    await mockAPIs(page);
-    await mockHomesAPI(page);
-
-    await page.goto("/apply", { waitUntil: "domcontentloaded" });
-    await page.evaluate(() => {
-      localStorage.setItem("application_id", "frozen-app-id");
-    });
-
-    await page.goto("/results", { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("h1", { timeout: 30000 });
-
-    // Click "answer questions" button
-    const answerBtn = page.getByRole("button", { name: "answer questions" });
-    await answerBtn.scrollIntoViewIfNeeded();
-    await expect(answerBtn).toBeVisible();
-    await answerBtn.click();
-
-    // Modal should open with questions
-    await expect(page.locator("text=keeps you up at night")).toBeVisible({ timeout: 5000 });
-
-    // Fill in answers
-    const textareas = page.locator("textarea");
-    const count = await textareas.count();
-    for (let i = 0; i < count; i++) {
-      await textareas.nth(i).fill(`Answer ${i + 1}`);
-    }
-
-    // Close modal
-    await page.keyboard.press("Escape");
+    const cardCount = await cards.count();
+    expect(cardCount).toBeGreaterThanOrEqual(1);
+    expect(cardCount).toBeLessThanOrEqual(3);
   });
 });

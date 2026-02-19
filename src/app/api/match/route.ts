@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
   // Filter homes by applicant's selected locations
   const selectedLocations = app.answers.locations
-    ? app.answers.locations.split(",").filter(Boolean)
+    ? app.answers.locations.split("|").filter(Boolean)
     : [];
 
   if (selectedLocations.length > 0) {

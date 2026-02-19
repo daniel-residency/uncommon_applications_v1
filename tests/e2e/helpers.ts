@@ -1,378 +1,112 @@
 import { Page } from "@playwright/test";
 
-/**
- * Mock the API routes for testing. Intercepts fetch calls to Supabase-backed APIs.
- */
-export async function mockAPIs(page: Page) {
-  // Mock application creation / lookup
-  await page.route((url) => url.pathname === "/api/applications", async (route) => {
-    const method = route.request().method();
+const BASE = process.env.BASE_URL || "http://localhost:3000";
 
-    if (method === "POST") {
-      const body = JSON.parse(route.request().postData() || "{}");
-      const email = body.email || "test@example.com";
-
-      // Check for special returning user emails
-      if (email === "frozen@example.com") {
-        return route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id: "frozen-app-id",
-            email,
-            answers: { citizenship: "United States", pitch: "Test pitch" },
-            status: "frozen",
-            current_section: null,
-            matched_home_ids: ["home-1", "home-2", "home-3"],
-            frozen_at: new Date().toISOString(),
-            submitted_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      }
-
-      if (email === "submitted@example.com") {
-        return route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id: "submitted-app-id",
-            email,
-            answers: {},
-            status: "submitted",
-            current_section: null,
-            matched_home_ids: ["home-1", "home-2", "home-3"],
-            frozen_at: new Date().toISOString(),
-            submitted_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      }
-
-      if (email === "returning@example.com") {
-        return route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id: "returning-app-id",
-            email,
-            answers: {
-              citizenship: "United States",
-              locations: "New York, NY,Berkeley, CA",
-              accomplishments: "Built a startup",
-            },
-            status: "in_progress",
-            current_section: "the-project",
-            matched_home_ids: null,
-            frozen_at: null,
-            submitted_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      }
-
-      // New user
-      return route.fulfill({
-        status: 201,
-        contentType: "application/json",
-        body: JSON.stringify({
-          id: "test-app-id",
-          email,
-          answers: {},
-          status: "in_progress",
-          current_section: null,
-          matched_home_ids: null,
-          frozen_at: null,
-          submitted_at: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    }
-
-    if (method === "GET") {
-      const url = new URL(route.request().url());
-      const id = url.searchParams.get("id");
-
-      // Handle different app IDs
-      if (id === "frozen-app-id") {
-        return route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id,
-            email: "frozen@example.com",
-            answers: { citizenship: "United States" },
-            status: "frozen",
-            current_section: null,
-            matched_home_ids: ["home-1", "home-2", "home-3"],
-            frozen_at: new Date().toISOString(),
-            submitted_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      }
-
-      if (id === "submitted-app-id") {
-        return route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id,
-            email: "submitted@example.com",
-            answers: {},
-            status: "submitted",
-            current_section: null,
-            matched_home_ids: ["home-1", "home-2", "home-3"],
-            frozen_at: new Date().toISOString(),
-            submitted_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      }
-
-      if (id === "returning-app-id") {
-        return route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id,
-            email: "returning@example.com",
-            answers: {
-              citizenship: "United States",
-              locations: "New York, NY,Berkeley, CA",
-              accomplishments: "Built a startup",
-            },
-            status: "in_progress",
-            current_section: "the-project",
-            matched_home_ids: null,
-            frozen_at: null,
-            submitted_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      }
-
-      // Default: in-progress app
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          id: id || "test-app-id",
-          email: "test@example.com",
-          answers: {},
-          status: "in_progress",
-          current_section: "about-you",
-          matched_home_ids: null,
-          frozen_at: null,
-          submitted_at: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    }
-
-    if (method === "PATCH") {
-      const body = JSON.parse(route.request().postData() || "{}");
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          ...body,
-          id: body.id || "test-app-id",
-          email: "test@example.com",
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    }
-
-    return route.continue();
-  });
+/** Generate a unique email for test isolation */
+export function uniqueEmail() {
+  return `e2e+${Date.now()}+${Math.random().toString(36).slice(2, 7)}@test.residency.app`;
 }
 
-export const MOCK_HOMES = [
-  {
-    id: "home-1",
-    name: "Homebrew",
-    slug: "homebrew",
-    color: "#6B4C8C",
-    logo_url: null,
-    location: "New York, NY",
-    description_template:
-      "Hi {{name}},\n\nI liked what I saw in your application. I'm a home in New York for people who can't stop learning.",
-    matching_prompt: "You are Homebrew...",
-    question: null,
-    video_url: null,
-    active: true,
-    display_order: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "home-2",
-    name: "The Inventors Residency",
-    slug: "inventors",
-    color: "#2D5A4A",
-    logo_url: null,
-    location: "San Francisco, CA",
-    description_template:
-      "Hi {{name}},\n\nYour application stood out to me. I'm a 12-week residency in the Mission.",
-    matching_prompt: "You are The Inventors Residency...",
-    question: "What's the thing you're building that keeps you up at night?",
-    video_url: "/videos/inventors.mp4",
-    active: true,
-    display_order: 2,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "home-3",
-    name: "Arcadia",
-    slug: "arcadia",
-    color: "#C17F3C",
-    logo_url: null,
-    location: "Berkeley, CA",
-    description_template:
-      "Hi {{name}},\n\nI think you'd do well here. I'm the biggest home in the network.",
-    matching_prompt: "You are Arcadia...",
-    question: "What's an idea you'd want to explore here?",
-    video_url: null,
-    active: true,
-    display_order: 3,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
-export async function mockHomesAPI(page: Page) {
-  await page.route("**/api/homes*", async (route) => {
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(MOCK_HOMES),
-    });
+/** Create an application via the API */
+export async function createApp(email: string) {
+  const res = await fetch(`${BASE}/api/applications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
   });
+  return res.json();
 }
 
-export async function mockMatchAPI(page: Page) {
-  await page.route("**/api/match", async (route) => {
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        matched_home_ids: ["home-1", "home-2", "home-3"],
-      }),
-    });
+/** Update an application via the API */
+export async function updateApp(id: string, updates: Record<string, unknown>) {
+  const res = await fetch(`${BASE}/api/applications`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, ...updates }),
   });
+  return res.json();
 }
 
-export async function mockAdminAPI(page: Page) {
-  await page.route("**/api/admin", async (route) => {
-    const method = route.request().method();
-
-    if (method === "GET") {
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ authenticated: true }),
-      });
-    }
-
-    if (method === "POST") {
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ success: true }),
-      });
-    }
-
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ success: true }),
-    });
-  });
-
-  await page.route("**/api/admin/stats", async (route) => {
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        total: 42,
-        inProgress: 20,
-        frozen: 12,
-        submitted: 10,
-      }),
-    });
-  });
-
-  await page.route("**/api/admin/applications", async (route) => {
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([
-        {
-          id: "test-app-id",
-          email: "test@example.com",
-          answers: { citizenship: "United States", pitch: "AI startup" },
-          status: "submitted",
-          current_section: null,
-          matched_home_ids: ["home-1", "home-2", "home-3"],
-          frozen_at: new Date().toISOString(),
-          submitted_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: "test-app-id-2",
-          email: "user2@example.com",
-          answers: { citizenship: "Canada" },
-          status: "in_progress",
-          current_section: "about-you",
-          matched_home_ids: null,
-          frozen_at: null,
-          submitted_at: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ]),
-    });
-  });
+/** Fetch all active homes from the API */
+export async function getHomes() {
+  const res = await fetch(`${BASE}/api/homes`);
+  return res.json();
 }
 
-/**
- * Setup a new user: navigate to /apply, fill email inline, wait for form to become interactive.
- */
-export async function setupNewUser(page: Page) {
-  await mockAPIs(page);
-  await mockHomesAPI(page);
+/** Trigger AI matching for a frozen application */
+export async function triggerMatch(applicationId: string) {
+  const res = await fetch(`${BASE}/api/match`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ applicationId }),
+  });
+  return res.json();
+}
+
+/** Complete set of answers that satisfies all required fields */
+export const FULL_ANSWERS: Record<string, string> = {
+  citizenship: "United States",
+  locations: "San Francisco, CA|New York, NY",
+  accomplishments: "Built a distributed systems startup that scaled to 10k users. Published research on graph algorithms.",
+  pitch: "AI-powered code review for teams",
+  details: "We use static analysis combined with LLMs to find bugs before they ship. Currently in beta with 50 teams.",
+  project_link: "https://example.com/project",
+  demo_video: "https://example.com/demo",
+  why_this: "I spent 5 years as a senior engineer watching teams ship bugs that automated tooling could catch.",
+  how_know_needed: "50 beta teams, 3 paying customers, and a waitlist of 200. Engineers tell us they catch 2-3 bugs per PR.",
+  how_far: "Working beta product with 50 active teams. Core analysis engine is solid, UX needs polish.",
+  duration: "Full-time for 8 months. Part-time research for a year before that.",
+  has_users: "yes",
+  has_revenue: "yes",
+  competitors: "Snyk and CodeClimate do static analysis. GitHub Copilot does AI code suggestions. Nobody combines both.",
+  unique_insight: "Static analysis rules are too rigid, pure LLMs hallucinate. The sweet spot is LLMs guided by AST constraints.",
+  world_impact: "Better code quality means fewer production incidents, less developer burnout, and more reliable software for everyone.",
+  what_need: "A community of technical founders to pressure-test our go-to-market strategy and early enterprise sales approach.",
+  how_helps: "Access to founders who've done enterprise sales, plus a focused environment to ship our v2 in 12 weeks.",
+  looking_cofounder: "no",
+  has_investment: "yes",
+  focus_area: "building",
+  accelerators: "Y Combinator W24 batch",
+  had_roommates: "yes",
+  applied_before: "no",
+  what_convinced: "A friend who was in the last cohort said it changed how they think about building. That was enough.",
+  how_heard: "word_of_mouth",
+};
+
+/** Navigate to /apply, enter email, wait for form to load */
+export async function enterEmail(page: Page, email: string) {
   await page.goto("/apply", { waitUntil: "domcontentloaded" });
-  // Wait for the email input to appear (dev server may be compiling)
   await page.waitForSelector('input[type="email"]', { timeout: 30000 });
-  await page.fill('input[type="email"]', "test@example.com");
+  await page.fill('input[type="email"]', email);
   await page.click('button[type="submit"]');
-  // Wait for form to become interactive (email section disappears)
-  await page.waitForFunction(() => !document.querySelector('input[type="email"]'), { timeout: 15000 });
-  await page.waitForTimeout(300);
+  // Wait for form to become interactive (email field goes away)
+  await page.waitForFunction(
+    () => !document.querySelector('input[type="email"]'),
+    { timeout: 30000 }
+  );
+  await page.waitForTimeout(500);
 }
 
-/**
- * Setup a results page with mocked matched homes and application data.
- */
-export async function setupResultsPage(page: Page) {
-  await mockAPIs(page);
-  await mockHomesAPI(page);
-  // Must navigate first before accessing localStorage
+/** Create an app with all answers filled via API, ready for freeze */
+export async function createFilledApp(email: string) {
+  const app = await createApp(email);
+  await updateApp(app.id, { answers: FULL_ANSWERS });
+  return app;
+}
+
+/** Create a frozen app with matched homes via API (no Claude call) */
+export async function createMatchedApp(email: string) {
+  const app = await createFilledApp(email);
+  await updateApp(app.id, { status: "frozen", frozen_at: new Date().toISOString() });
+  const homes = await getHomes();
+  const homeIds = homes.slice(0, 3).map((h: { id: string }) => h.id);
+  await updateApp(app.id, { matched_home_ids: homeIds });
+  return { app, homeIds };
+}
+
+/** Set localStorage application_id and navigate to a page */
+export async function setupWithAppId(page: Page, appId: string, path: string) {
   await page.goto("/apply", { waitUntil: "domcontentloaded" });
-  await page.evaluate(() => {
-    localStorage.setItem("application_id", "frozen-app-id");
-  });
-  await page.goto("/results", { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("h1", { timeout: 15000 });
+  await page.evaluate((id) => localStorage.setItem("application_id", id), appId);
+  await page.goto(path, { waitUntil: "domcontentloaded" });
 }

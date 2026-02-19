@@ -112,8 +112,8 @@ export default function QuestionRenderer({
         <CheckboxGroup
           label={question.label}
           options={question.options || []}
-          value={value ? value.split(",").filter(Boolean) : []}
-          onChange={(vals) => onChange(vals.join(","))}
+          value={value ? value.split("|").filter(Boolean) : []}
+          onChange={(vals) => onChange(vals.join("|"))}
           required={question.required}
           helpText={question.helpText}
         />
