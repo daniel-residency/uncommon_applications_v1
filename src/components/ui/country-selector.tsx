@@ -39,31 +39,33 @@ export default function CountrySelector({
   return (
     <div className="w-full" ref={ref}>
       {label && (
-        <label className="block text-base text-ink-dark mb-2 leading-relaxed">
+        <label className="block text-sm text-ink font-semibold mb-1.5 lowercase">
           {label}
-          {required && <span className="text-stone-dark ml-1">*</span>}
         </label>
       )}
       <div className="relative">
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className={`w-full border rounded-sm bg-cream py-3 px-4 text-base font-serif text-left outline-none transition-colors cursor-pointer ${
-            value ? "text-ink-dark" : "text-stone"
-          } ${open ? "border-ink-dark" : "border-sand"} ${error ? "border-red-400" : ""}`}
+          className={`w-full border rounded-md bg-white/40 py-2.5 px-3.5 text-sm text-left outline-none transition-colors cursor-pointer ${
+            value ? "text-ink" : "text-mid-gray"
+          } ${open ? "border-ink" : "border-border"} ${error ? "border-red-400" : ""}`}
         >
-          {value || "Select country..."}
+          {value || "select"}
         </button>
+        <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="#8E8EA0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
 
         {open && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-cream border border-sand rounded-sm shadow-lg z-50 max-h-60 overflow-hidden">
-            <div className="p-2 border-b border-sand">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-md shadow-lg z-50 max-h-60 overflow-hidden">
+            <div className="p-2 border-b border-border-light">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search countries..."
-                className="w-full px-3 py-2 text-sm font-serif bg-transparent outline-none text-ink-dark placeholder:text-stone"
+                placeholder="search countries..."
+                className="w-full px-3 py-1.5 text-sm bg-transparent outline-none text-ink placeholder:text-mid-gray"
                 autoFocus
               />
             </div>
@@ -77,15 +79,15 @@ export default function CountrySelector({
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm font-serif hover:bg-sand/30 cursor-pointer transition-colors ${
-                    value === country ? "bg-sand/50 text-ink-dark" : "text-ink"
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-frost cursor-pointer transition-colors lowercase ${
+                    value === country ? "bg-frost text-ink font-semibold" : "text-ink"
                   }`}
                 >
                   {country}
                 </button>
               ))}
               {filtered.length === 0 && (
-                <p className="px-4 py-3 text-sm text-stone-dark">No countries found</p>
+                <p className="px-4 py-3 text-sm text-mid-gray">no countries found</p>
               )}
             </div>
           </div>

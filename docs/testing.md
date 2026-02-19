@@ -1,6 +1,6 @@
 # Testing
 
-All tests are Playwright end-to-end tests in `tests/e2e/`. They run against a local dev server and mock all API routes, so no Supabase or Anthropic credentials are needed.
+Tests include Playwright end-to-end tests in `tests/e2e/` and integration tests in `tests/integration/`. E2E tests run against a local dev server and mock all API routes, so no Supabase or Anthropic credentials are needed.
 
 ## Running Tests
 
@@ -8,38 +8,54 @@ All tests are Playwright end-to-end tests in `tests/e2e/`. They run against a lo
 # Install browsers (first time only)
 npx playwright install
 
-# Run all tests headless
+# Run all e2e tests headless
 npx playwright test
 
 # Run with interactive UI
 npx playwright test --ui
 
 # Run a single test file
-npx playwright test tests/e2e/email-entry.spec.ts
+npx playwright test tests/e2e/email-in-form.spec.ts
 
 # Run in headed mode (see the browser)
 npx playwright test --headed
+
+# Run with limited workers
+npx playwright test --workers=2
 ```
 
 The Playwright config (`playwright.config.ts`) automatically starts the dev server on port 3000 before running tests.
 
 ## Test File Inventory
 
+### E2E Tests (`tests/e2e/`)
+
 | File | Description |
 |------|-------------|
-| `email-entry.spec.ts` | Email input validation, form submission, and application creation |
-| `application-form.spec.ts` | Multi-section form navigation, rendering all question types |
+| `email-in-form.spec.ts` | Email as first field: new user, invalid email, returning user pre-fill, frozen/submitted redirects |
+| `email-entry.spec.ts` | Email input validation and application creation on /apply |
+| `application-form.spec.ts` | Single-page form rendering, all question types, maxLength enforcement |
+| `form-interactions.spec.ts` | All field types: country selector, checkbox, select, yes/no, short text, conditional questions |
+| `full-flow.spec.ts` | Happy path: email → form → freeze → matching → results → answer questions → submit |
+| `results-page.spec.ts` | Cards render, letter modal, video display, question answering, "answer all" modal, submit gating |
+| `navigation.spec.ts` | Sidebar click-to-scroll, scroll-to-highlight, hash navigation, logo display |
 | `auto-save.spec.ts` | localStorage and server auto-save debouncing behavior |
-| `resume-application.spec.ts` | Returning user resumes from where they left off |
+| `resume-application.spec.ts` | Returning user resumes with pre-filled answers |
 | `conditional-questions.spec.ts` | Questions that show/hide based on other answers |
-| `frozen-state.spec.ts` | Frozen application state — core answers locked, home answers editable |
-| `matching-flow.spec.ts` | AI matching trigger, loading animation, and results display |
+| `frozen-state.spec.ts` | Frozen application state — redirects and locked answers |
+| `matching-flow.spec.ts` | AI matching trigger, freeze warning, loading animation |
 | `home-questions.spec.ts` | Home-specific questions shown after matching |
-| `letter-modal.spec.ts` | Personalized home letter modal with name substitution |
+| `letter-modal.spec.ts` | Personalized home letter modal, video display, coming-soon placeholder |
 | `submit-flow.spec.ts` | Final submission flow and confirmation page |
 | `admin-applications.spec.ts` | Admin dashboard — application list and filtering |
 | `admin-homes.spec.ts` | Admin homes management page |
 | `admin-export.spec.ts` | Admin application data export functionality |
+
+### Integration Tests (`tests/integration/`)
+
+| File | Description |
+|------|-------------|
+| `database.spec.ts` | Real Supabase CRUD: create/read/update applications, freeze, match, submit, homes list. Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` env vars. |
 
 ## How API Mocking Works
 
@@ -56,7 +72,7 @@ Intercepts all `/api/applications` calls (GET, POST, PATCH). Returns different m
 | Any other email | Creates/returns a fresh in-progress application |
 
 ### `mockHomesAPI(page)`
-Intercepts `/api/homes*` and returns 3 mock homes (Homebrew, The Inventors Residency, Arcadia).
+Intercepts `/api/homes*` and returns 3 mock homes (Homebrew with video, The Inventors Residency with video, Arcadia without video).
 
 ### `mockMatchAPI(page)`
 Intercepts `/api/match` and returns a fixed set of 3 matched home IDs.
@@ -65,7 +81,10 @@ Intercepts `/api/match` and returns a fixed set of 3 matched home IDs.
 Intercepts all admin routes (`/api/admin`, `/api/admin/stats`, `/api/admin/applications`) with mock data.
 
 ### `setupNewUser(page)`
-Convenience function that calls `mockAPIs` + `mockHomesAPI`, navigates to `/`, enters a test email, and submits — landing on the first form section.
+Convenience function that calls `mockAPIs` + `mockHomesAPI`, navigates to `/apply`, enters a test email inline, and waits for the form to become interactive.
+
+### `setupResultsPage(page)`
+Sets up localStorage with a frozen app ID and navigates to `/results`.
 
 ## Writing a New Test
 
@@ -80,7 +99,7 @@ Convenience function that calls `mockAPIs` + `mockHomesAPI`, navigates to `/`, e
    test("my feature works", async ({ page }) => {
      await mockAPIs(page);
      await mockHomesAPI(page);
-     await page.goto("/");
+     await page.goto("/apply");
      // ... your test
    });
    ```
@@ -100,7 +119,7 @@ Convenience function that calls `mockAPIs` + `mockHomesAPI`, navigates to `/`, e
 ## Key Gotchas
 
 ### localStorage before navigation
-You must navigate to a page (`page.goto("/")`) **before** calling `page.evaluate(() => localStorage.setItem(...))`. Attempting to access localStorage before navigation throws a `SecurityError`.
+You must navigate to a page (`page.goto("/apply")`) **before** calling `page.evaluate(() => localStorage.setItem(...))`. Attempting to access localStorage before navigation throws a `SecurityError`.
 
 ### Route matching with query params
 Playwright's string pattern `"**/api/foo"` does **not** match `/api/foo?id=123`. Use a URL predicate instead:

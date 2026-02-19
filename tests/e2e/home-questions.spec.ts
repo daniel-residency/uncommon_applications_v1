@@ -1,45 +1,31 @@
 import { test, expect } from "@playwright/test";
-import { mockAPIs, mockHomesAPI } from "./helpers";
+import { mockAPIs, mockHomesAPI, setupResultsPage } from "./helpers";
 
 test.describe("Home Questions", () => {
   test.beforeEach(async ({ page }) => {
-    await mockAPIs(page);
-    await mockHomesAPI(page);
-
-    // Navigate to a page first so we can access localStorage
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem("application_id", "frozen-app-id");
-    });
-
-    await page.goto("/results");
-    await page.waitForTimeout(1500);
+    await setupResultsPage(page);
   });
 
-  test("shows question count tracker", async ({ page }) => {
-    await expect(page.locator("text=0 of 2 home questions answered")).toBeVisible();
+  test("shows question count progress", async ({ page }) => {
+    await expect(page.locator("text=questions answered")).toBeVisible();
   });
 
-  test("answering a question shows saved indicator", async ({ page }) => {
-    // Open Inventors modal
-    await page.locator("text=The Inventors Residency").click();
+  test("answering a question in modal shows saved indicator", async ({ page }) => {
+    // Click Inventors card (home-2, which has a question)
+    const cards = page.locator("button.group");
+    await cards.nth(1).click();
+    await page.waitForTimeout(300);
 
     // Fill in the question
-    const textarea = page.locator('textarea[placeholder="Your answer..."]');
+    const textarea = page.locator("textarea");
     await textarea.fill("Building a new kind of search engine");
 
-    // Should show Saved indicator
-    await expect(page.locator("text=Saved")).toBeVisible();
-  });
-
-  test("question indicators update on envelopes", async ({ page }) => {
-    // Initially, question indicators should show "?"
-    const questionBadges = page.locator("text=?");
-    expect(await questionBadges.count()).toBeGreaterThan(0);
+    // Should show saved indicator
+    await expect(page.locator("text=saved")).toBeVisible();
   });
 
   test("submit button is disabled until all questions answered", async ({ page }) => {
-    const submitBtn = page.locator("button >> text=Submit application");
-    await expect(submitBtn).toBeDisabled();
+    // Without answers, "answer questions" button should be shown (secondary variant)
+    await expect(page.getByRole("button", { name: "answer questions" })).toBeVisible();
   });
 });

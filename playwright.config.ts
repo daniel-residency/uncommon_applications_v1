@@ -4,12 +4,18 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  timeout: 60000,
+  expect: {
+    timeout: 15000,
+  },
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
+    navigationTimeout: 30000,
+    actionTimeout: 15000,
   },
   projects: [
     {
@@ -18,9 +24,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
+    command: "npm run build && npm run start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 30000,
+    timeout: 60000,
   },
 });

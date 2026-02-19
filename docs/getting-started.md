@@ -37,9 +37,10 @@ ADMIN_SECRET=your_admin_secret
 ## Supabase Setup
 
 1. Create a new Supabase project
-2. Go to the **SQL Editor** and run the two migration files in order:
+2. Go to the **SQL Editor** and run the migration files in order:
    - `supabase/migrations/001_initial_schema.sql` — creates the `homes` and `applications` tables, indexes, and update triggers
    - `supabase/migrations/002_seed_homes.sql` — seeds 10 residency homes with descriptions, matching prompts, and optional questions
+   - `supabase/migrations/003_video_urls.sql` — sets `video_url` for the 6 homes that have intro videos
 3. Copy your project URL and keys into `.env.local`
 
 The database has 2 tables: `homes` (10 seeded rows) and `applications` (created at runtime). See [database.md](./database.md) for the full schema.

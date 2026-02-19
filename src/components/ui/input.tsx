@@ -13,18 +13,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-base text-ink-dark mb-2 leading-relaxed">
+          <label className="block text-sm text-ink font-semibold mb-1.5 lowercase">
             {label}
-            {props.required && <span className="text-stone-dark ml-1">*</span>}
           </label>
         )}
         <input
           ref={ref}
-          className={`w-full border-b border-sand bg-transparent py-3 text-lg font-serif text-ink-dark outline-none placeholder:text-stone transition-colors focus:border-ink-dark ${error ? "border-red-400" : ""} ${className}`}
+          className={`w-full border-b border-border bg-transparent py-2.5 text-sm text-ink outline-none placeholder:text-mid-gray transition-colors focus:border-ink ${error ? "border-red-400" : ""} ${className}`}
+          placeholder={props.placeholder || "type your answer here"}
           {...props}
         />
         {helpText && !error && (
-          <p className="mt-1 text-xs text-stone-dark">{helpText}</p>
+          <p className="mt-1 text-xs text-mid-gray">{helpText}</p>
         )}
         {error && (
           <p className="mt-1 text-xs text-red-500">{error}</p>

@@ -30,36 +30,36 @@ export default function CheckboxGroup({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-base text-ink-dark mb-3 leading-relaxed">
+        <label className="block text-sm text-ink font-semibold mb-1.5 lowercase">
           {label}
-          {required && <span className="text-stone-dark ml-1">*</span>}
         </label>
       )}
       {helpText && (
-        <p className="text-xs text-stone-dark mb-3">{helpText}</p>
+        <p className="text-xs text-mid-gray mb-2">{helpText}</p>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {options.map((opt) => (
           <label
             key={opt.value}
-            className={`flex items-center gap-3 p-3 rounded-sm border cursor-pointer transition-colors ${
+            onClick={() => toggle(opt.value)}
+            className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-md border cursor-pointer transition-colors text-sm lowercase ${
               value.includes(opt.value)
-                ? "border-ink-dark bg-cream"
-                : "border-sand hover:border-stone-dark"
+                ? "border-ink bg-ink text-white"
+                : "border-border hover:border-ink text-ink"
             }`}
           >
             <div
-              className={`w-5 h-5 rounded-sm border-2 flex items-center justify-center shrink-0 transition-colors ${
+              className={`w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 transition-colors ${
                 value.includes(opt.value)
-                  ? "border-ink-dark bg-ink-dark"
-                  : "border-sand-dark"
+                  ? "border-white bg-white/20"
+                  : "border-border"
               }`}
             >
               {value.includes(opt.value) && (
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
                   <path
                     d="M3 8l4 4 6-8"
-                    stroke="#FFFEF9"
+                    stroke="currentColor"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -67,7 +67,7 @@ export default function CheckboxGroup({
                 </svg>
               )}
             </div>
-            <span className="text-sm text-ink-dark">{opt.label}</span>
+            <span>{opt.label}</span>
           </label>
         ))}
       </div>

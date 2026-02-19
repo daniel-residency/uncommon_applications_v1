@@ -10,18 +10,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "md", loading, children, disabled, className = "", ...props }, ref) => {
-    const base = "font-serif rounded-sm transition-all duration-200 tracking-wide cursor-pointer disabled:cursor-default";
+    const base = "font-sans rounded-full transition-all duration-200 tracking-wide cursor-pointer disabled:cursor-default lowercase";
 
     const variants = {
-      primary: "bg-ink-dark text-cream hover:bg-ink disabled:bg-sand-dark",
-      secondary: "bg-transparent text-ink-dark border border-sand hover:border-ink-dark disabled:text-stone-dark",
-      ghost: "bg-transparent text-ink-dark hover:text-ink disabled:text-stone-dark",
+      primary: "bg-ink text-white hover:bg-ink-light disabled:bg-border disabled:text-mid-gray",
+      secondary: "bg-transparent text-ink border border-border hover:border-ink disabled:text-mid-gray",
+      ghost: "bg-transparent text-ink hover:text-ink-light disabled:text-mid-gray",
     };
 
     const sizes = {
-      sm: "px-4 py-2 text-sm",
-      md: "px-6 py-3 text-sm",
-      lg: "px-8 py-4 text-base",
+      sm: "px-4 py-2 text-xs font-semibold",
+      md: "px-6 py-2.5 text-sm font-semibold",
+      lg: "px-8 py-3 text-sm font-semibold",
     };
 
     return (

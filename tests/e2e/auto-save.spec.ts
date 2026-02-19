@@ -45,9 +45,9 @@ test.describe("Auto-Save", () => {
     // Wait for local save
     await page.waitForTimeout(500);
 
-    // Reload
-    await page.reload();
-    await page.waitForTimeout(500);
+    // Reload with networkidle to handle dev mode recompilation
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector('section#about-you', { timeout: 30000 });
 
     // Answer should be restored (from the mock API which returns the app state)
     // The localStorage should still have the data

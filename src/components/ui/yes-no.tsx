@@ -12,28 +12,27 @@ export default function YesNo({ label, value, onChange, required, error }: YesNo
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-base text-ink-dark mb-3 leading-relaxed">
+        <label className="block text-sm text-ink font-semibold mb-1.5 lowercase">
           {label}
-          {required && <span className="text-stone-dark ml-1">*</span>}
         </label>
       )}
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {["yes", "no"].map((opt) => (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`px-6 py-2.5 rounded-sm border text-sm font-serif transition-colors cursor-pointer ${
+            className={`px-5 py-2 rounded-md border text-sm transition-colors cursor-pointer lowercase ${
               value === opt
-                ? "border-ink-dark bg-ink-dark text-cream"
-                : "border-sand text-ink-dark hover:border-stone-dark"
+                ? "border-ink bg-ink text-white"
+                : "border-border text-ink hover:border-ink"
             }`}
           >
-            {opt === "yes" ? "Yes" : "No"}
+            {opt}
           </button>
         ))}
       </div>
-      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   );
 }

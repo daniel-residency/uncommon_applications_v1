@@ -60,7 +60,7 @@ export async function mockAPIs(page: Page) {
             email,
             answers: {
               citizenship: "United States",
-              locations: "homebrew,arcadia",
+              locations: "New York, NY,Berkeley, CA",
               accomplishments: "Built a startup",
             },
             status: "in_progress",
@@ -145,7 +145,7 @@ export async function mockAPIs(page: Page) {
             email: "returning@example.com",
             answers: {
               citizenship: "United States",
-              locations: "homebrew,arcadia",
+              locations: "New York, NY,Berkeley, CA",
               accomplishments: "Built a startup",
             },
             status: "in_progress",
@@ -200,11 +200,12 @@ export const MOCK_HOMES = [
   {
     id: "home-1",
     name: "Homebrew",
+    slug: "homebrew",
     color: "#6B4C8C",
     logo_url: null,
-    location: "Brooklyn, NY",
+    location: "New York, NY",
     description_template:
-      "Hi {{name}},\n\nI liked what I saw in your application. I'm a home in Brooklyn for people who can't stop learning.",
+      "Hi {{name}},\n\nI liked what I saw in your application. I'm a home in New York for people who can't stop learning.",
     matching_prompt: "You are Homebrew...",
     question: null,
     video_url: null,
@@ -216,6 +217,7 @@ export const MOCK_HOMES = [
   {
     id: "home-2",
     name: "The Inventors Residency",
+    slug: "inventors",
     color: "#2D5A4A",
     logo_url: null,
     location: "San Francisco, CA",
@@ -223,7 +225,7 @@ export const MOCK_HOMES = [
       "Hi {{name}},\n\nYour application stood out to me. I'm a 12-week residency in the Mission.",
     matching_prompt: "You are The Inventors Residency...",
     question: "What's the thing you're building that keeps you up at night?",
-    video_url: null,
+    video_url: "/videos/inventors.mp4",
     active: true,
     display_order: 2,
     created_at: new Date().toISOString(),
@@ -232,6 +234,7 @@ export const MOCK_HOMES = [
   {
     id: "home-3",
     name: "Arcadia",
+    slug: "arcadia",
     color: "#C17F3C",
     logo_url: null,
     location: "Berkeley, CA",
@@ -343,11 +346,33 @@ export async function mockAdminAPI(page: Page) {
   });
 }
 
+/**
+ * Setup a new user: navigate to /apply, fill email inline, wait for form to become interactive.
+ */
 export async function setupNewUser(page: Page) {
   await mockAPIs(page);
   await mockHomesAPI(page);
-  await page.goto("/");
+  await page.goto("/apply", { waitUntil: "domcontentloaded" });
+  // Wait for the email input to appear (dev server may be compiling)
+  await page.waitForSelector('input[type="email"]', { timeout: 30000 });
   await page.fill('input[type="email"]', "test@example.com");
   await page.click('button[type="submit"]');
-  await page.waitForURL("**/apply/**");
+  // Wait for form to become interactive (email section disappears)
+  await page.waitForFunction(() => !document.querySelector('input[type="email"]'), { timeout: 15000 });
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Setup a results page with mocked matched homes and application data.
+ */
+export async function setupResultsPage(page: Page) {
+  await mockAPIs(page);
+  await mockHomesAPI(page);
+  // Must navigate first before accessing localStorage
+  await page.goto("/apply", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    localStorage.setItem("application_id", "frozen-app-id");
+  });
+  await page.goto("/results", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector("h1", { timeout: 15000 });
 }

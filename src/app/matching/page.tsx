@@ -81,10 +81,10 @@ export default function MatchingPage() {
               <div
                 className={`w-5 h-5 min-w-[20px] rounded-full flex items-center justify-center transition-all duration-300 ${
                   idx < step
-                    ? "bg-green"
+                    ? "bg-accent"
                     : idx === step
-                    ? "border-2 border-ink-dark bg-transparent"
-                    : "bg-sand"
+                    ? "border-2 border-ink bg-transparent"
+                    : "bg-frost"
                 }`}
               >
                 {idx < step && (
@@ -93,12 +93,12 @@ export default function MatchingPage() {
                   </svg>
                 )}
                 {idx === step && (
-                  <div className="w-2 h-2 rounded-full bg-ink-dark animate-pulse-dot" />
+                  <div className="w-2 h-2 rounded-full bg-ink animate-pulse-dot" />
                 )}
               </div>
               <span
                 className={`text-sm sm:text-base transition-colors duration-300 ${
-                  idx <= step ? "text-ink-dark" : "text-stone-dark"
+                  idx <= step ? "text-ink" : "text-mid-gray"
                 }`}
               >
                 {s.label}

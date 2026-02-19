@@ -13,18 +13,18 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-base text-ink-dark mb-2 leading-relaxed">
+          <label className="block text-sm text-ink font-semibold mb-1.5 lowercase">
             {label}
-            {props.required && <span className="text-stone-dark ml-1">*</span>}
           </label>
         )}
         <textarea
           ref={ref}
-          className={`w-full border border-sand rounded-sm bg-cream-dark/30 p-4 text-base font-serif text-ink-dark outline-none placeholder:text-stone resize-none min-h-[120px] leading-relaxed transition-colors focus:border-ink-dark ${error ? "border-red-400" : ""} ${className}`}
+          className={`w-full border border-border rounded-md bg-white/40 px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-mid-gray resize-none min-h-[80px] leading-relaxed transition-colors focus:border-ink ${error ? "border-red-400" : ""} ${className}`}
+          placeholder={props.placeholder || "type your answer here"}
           {...props}
         />
         {helpText && !error && (
-          <p className="mt-1 text-xs text-stone-dark">{helpText}</p>
+          <p className="mt-1 text-xs text-mid-gray">{helpText}</p>
         )}
         {error && (
           <p className="mt-1 text-xs text-red-500">{error}</p>

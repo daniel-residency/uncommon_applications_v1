@@ -5,34 +5,31 @@ test.describe("Submit Flow", () => {
   test("submit page shows confirmation", async ({ page }) => {
     await mockAPIs(page);
 
-    // Navigate to a page first so we can access localStorage
-    await page.goto("/");
+    await page.goto("/apply", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('input[type="email"]', { timeout: 30000 });
     await page.evaluate(() => {
       localStorage.setItem("application_id", "submitted-app-id");
     });
 
-    await page.goto("/submit");
+    await page.goto("/submit", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('text=Application submitted', { timeout: 30000 });
 
     await expect(page.locator("text=Application submitted")).toBeVisible();
     await expect(page.locator("text=Thank you for applying")).toBeVisible();
   });
 
-  test("submitted user cannot re-edit", async ({ page }) => {
+  test("submitted user redirected from / to /submit", async ({ page }) => {
     await mockAPIs(page);
     await mockHomesAPI(page);
 
-    // Navigate to a page first so we can access localStorage
-    await page.goto("/");
+    await page.goto("/apply", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('input[type="email"]', { timeout: 30000 });
     await page.evaluate(() => {
       localStorage.setItem("application_id", "submitted-app-id");
     });
 
-    // Try to navigate to apply page
-    await page.goto("/apply/about-you");
-
-    // Should redirect away from apply pages
-    await page.waitForTimeout(1000);
-    expect(page.url()).not.toContain("/apply/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.waitForURL("**/submit", { timeout: 5000 });
   });
 
   test("status changes to submitted after submit", async ({ page }) => {

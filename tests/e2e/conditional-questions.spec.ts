@@ -5,13 +5,9 @@ test.describe("Conditional Questions", () => {
   test("Past Programs shows conditional questions based on applied_before", async ({ page }) => {
     await setupNewUser(page);
 
-    // Navigate to Past Programs section (section 8)
-    for (let i = 0; i < 7; i++) {
-      await page.click("text=Continue");
-      await page.waitForTimeout(200);
-    }
-
-    await expect(page.locator("h2")).toContainText("Past Programs");
+    // Scroll to past-programs section (all sections on one page now)
+    await page.locator("section#past-programs").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
 
     // "Are you working on the same thing?" should NOT be visible initially
     await expect(page.locator("text=Are you working on the same thing?")).not.toBeVisible();
@@ -27,11 +23,8 @@ test.describe("Conditional Questions", () => {
   test("shows 'What changed' when same_thing is yes", async ({ page }) => {
     await setupNewUser(page);
 
-    // Navigate to Past Programs
-    for (let i = 0; i < 7; i++) {
-      await page.click("text=Continue");
-      await page.waitForTimeout(200);
-    }
+    await page.locator("section#past-programs").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
 
     // Click Yes on applied_before
     const appliedSection = page.locator("text=Have you applied to the Residency before?").locator("..");
@@ -49,11 +42,8 @@ test.describe("Conditional Questions", () => {
   test("shows 'Why did you pivot' when same_thing is no", async ({ page }) => {
     await setupNewUser(page);
 
-    // Navigate to Past Programs
-    for (let i = 0; i < 7; i++) {
-      await page.click("text=Continue");
-      await page.waitForTimeout(200);
-    }
+    await page.locator("section#past-programs").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
 
     // Click Yes on applied_before
     const appliedSection = page.locator("text=Have you applied to the Residency before?").locator("..");

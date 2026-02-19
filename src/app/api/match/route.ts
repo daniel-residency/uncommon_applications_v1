@@ -45,9 +45,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No homes available" }, { status: 500 });
   }
 
-  const homesList = homes as Home[];
+  let homesList = homes as Home[];
 
-  // Build prompt for Claude
+  // Filter homes by applicant's selected locations
+  const selectedLocations = app.answers.locations
+    ? app.answers.locations.split(",").filter(Boolean)
+    : [];
+
+  if (selectedLocations.length > 0) {
+    homesList = homesList.filter((h) => selectedLocations.includes(h.location));
+  }
+
+  if (homesList.length === 0) {
+    // Fallback to all active homes if no location match
+    homesList = homes as Home[];
+  }
+
+  // Build prompt for Claude — use matching_prompt from DB
   const answersText = Object.entries(app.answers)
     .filter(([key]) => !key.startsWith("home_"))
     .map(([key, value]) => `${key}: ${value}`)
@@ -60,11 +74,13 @@ export async function POST(request: NextRequest) {
     )
     .join("\n\n---\n\n");
 
-  const systemPrompt = `You are an AI matching system for a residency program. You will be given an applicant's answers and descriptions of available homes. Your job is to rank the top 3 homes that would be the best fit for this applicant.
+  const matchCount = Math.min(3, homesList.length);
+
+  const systemPrompt = `You are an AI matching system for a residency program. You will be given an applicant's answers and descriptions of available homes. Your job is to rank the top ${matchCount} homes that would be the best fit for this applicant.
 
 Consider the applicant's project, background, interests, work style, and goals. Match them with homes whose culture, focus, and community would help them thrive.
 
-Return ONLY a valid JSON array of exactly 3 objects with "homeId" (the UUID) and "rank" (1=best, 2=second, 3=third). No other text.
+Return ONLY a valid JSON array of exactly ${matchCount} objects with "homeId" (the UUID) and "rank" (1=best, 2=second, 3=third). No other text.
 
 Example response:
 [{"homeId":"uuid-1","rank":1},{"homeId":"uuid-2","rank":2},{"homeId":"uuid-3","rank":3}]`;
@@ -75,12 +91,12 @@ ${answersText}
 ## Available Homes:
 ${homesPrompt}
 
-Return the top 3 best matching homes as a JSON array.`;
+Return the top ${matchCount} best matching homes as a JSON array.`;
 
   try {
     const anthropic = getAnthropicClient();
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5-20250929",
+      model: "claude-sonnet-4-6",
       max_tokens: 256,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
@@ -92,42 +108,41 @@ Return the top 3 best matching homes as a JSON array.`;
     // Parse the JSON response
     const rankings: MatchResult[] = JSON.parse(responseText.trim());
 
-    if (!Array.isArray(rankings) || rankings.length < 3) {
+    if (!Array.isArray(rankings) || rankings.length < matchCount) {
       throw new Error("Invalid ranking response");
     }
 
-    // Sort by rank and get top 3 home IDs
+    // Sort by rank and get top homes
     const sortedIds = rankings
       .sort((a, b) => a.rank - b.rank)
-      .slice(0, 3)
+      .slice(0, matchCount)
       .map((r) => r.homeId);
 
-    // Validate IDs exist
+    // Validate IDs exist in our filtered list
     const validIds = sortedIds.filter((id) =>
       homesList.some((h) => h.id === id)
     );
 
-    if (validIds.length < 3) {
-      // Fallback: pick first 3 homes
-      const fallbackIds = homesList.slice(0, 3).map((h) => h.id);
+    if (validIds.length < matchCount) {
+      const fallbackIds = homesList.slice(0, matchCount).map((h) => h.id);
       validIds.push(...fallbackIds.filter((id) => !validIds.includes(id)));
     }
 
-    const top3 = validIds.slice(0, 3);
+    const topN = validIds.slice(0, matchCount);
 
     // Update application
     await supabase
       .from("applications")
-      .update({ matched_home_ids: top3 })
+      .update({ matched_home_ids: topN })
       .eq("id", applicationId);
 
-    return NextResponse.json({ matched_home_ids: top3 });
+    return NextResponse.json({ matched_home_ids: topN });
   } catch (err) {
     console.error("AI matching error:", err);
 
-    // Fallback: random 3 homes
+    // Fallback: random homes from filtered list
     const shuffled = [...homesList].sort(() => Math.random() - 0.5);
-    const fallback = shuffled.slice(0, 3).map((h) => h.id);
+    const fallback = shuffled.slice(0, matchCount).map((h) => h.id);
 
     await supabase
       .from("applications")

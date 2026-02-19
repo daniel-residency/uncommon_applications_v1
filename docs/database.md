@@ -16,7 +16,7 @@ Stores residency home definitions. 10 homes are seeded via migration.
 | `description_template` | `TEXT NOT NULL` | Personalized letter template. Uses `{{name}}` placeholder for applicant's name |
 | `matching_prompt` | `TEXT NOT NULL` | System prompt sent to Claude for AI matching — describes what the home looks for |
 | `question` | `TEXT` | Optional home-specific question shown to matched applicants (null = no question) |
-| `video_url` | `TEXT` | Optional video URL |
+| `video_url` | `TEXT` | Optional video URL. Set for 6 homes via migration 003 |
 | `active` | `BOOLEAN NOT NULL` | Default `true`. Inactive homes are hidden from applicants but visible to admin |
 | `display_order` | `INTEGER NOT NULL` | Sort order for listing homes |
 | `created_at` | `TIMESTAMPTZ` | Auto-set on insert |
@@ -95,22 +95,23 @@ The `multi_checkbox` type (like `locations`) stores selected values as a comma-s
 
 ## Seeded Homes
 
-The 10 homes seeded by `002_seed_homes.sql`:
+The 10 homes seeded by `002_seed_homes.sql`, with video status after `003_video_urls.sql`:
 
-| # | Name | Location | Has Question? |
-|---|------|----------|---------------|
-| 1 | Vienna | Vienna, Austria | Yes |
-| 2 | Homebrew | Brooklyn, NY | No |
-| 3 | The Inventors Residency | San Francisco, CA | Yes |
-| 4 | Actioners | San Francisco, CA | Yes |
-| 5 | Bangalore | Bangalore, India | No |
-| 6 | Aurea | Austin, TX | Yes |
-| 7 | Arcadia | Berkeley, CA | Yes |
-| 8 | SF2 | San Francisco, CA | No |
-| 9 | Biopunk | Boston, MA | Yes |
-| 10 | London | London, UK | No |
+| # | Name | Location | Has Question? | Has Video? |
+|---|------|----------|---------------|------------|
+| 1 | Vienna | Vienna, Austria | Yes | Yes |
+| 2 | Homebrew | Brooklyn, NY | No | Yes |
+| 3 | The Inventors Residency | San Francisco, CA | Yes | Yes |
+| 4 | Actioners | San Francisco, CA | Yes | Yes |
+| 5 | Bangalore | Bangalore, India | No | No |
+| 6 | Aurea | Austin, TX | Yes | No |
+| 7 | Arcadia | Berkeley, CA | Yes | No |
+| 8 | SF2 | San Francisco, CA | No | Yes |
+| 9 | Biopunk | Boston, MA | Yes | Yes |
+| 10 | London | London, UK | No | No |
 
 ## Migration Files
 
 - `supabase/migrations/001_initial_schema.sql` — Creates tables, indexes, `update_updated_at_column()` trigger function, and triggers
 - `supabase/migrations/002_seed_homes.sql` — Inserts 10 homes with full description templates and matching prompts
+- `supabase/migrations/003_video_urls.sql` — Sets `video_url` for the 6 homes that have videos in `public/videos/`

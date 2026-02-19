@@ -1,6 +1,7 @@
 export interface Home {
   id: string;
   name: string;
+  slug: string;
   color: string;
   logo_url: string | null;
   location: string;

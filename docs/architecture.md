@@ -8,22 +8,22 @@
 | Language | TypeScript |
 | UI | React 19, Tailwind CSS v4 |
 | Database | Supabase (PostgreSQL) |
-| AI Matching | Anthropic Claude API (Sonnet) |
+| AI Matching | Anthropic Claude API (Sonnet 4.6) |
 | Validation | Zod |
-| Testing | Playwright (e2e) |
+| Testing | Playwright (e2e + integration) |
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx                  # Email entry (landing page)
+│   ├── page.tsx                  # Redirect: checks localStorage → routes to /apply, /results, /submit
 │   ├── layout.tsx                # Root layout with fonts + metadata
 │   ├── globals.css               # Tailwind v4 config + custom theme tokens
 │   ├── apply/
-│   │   └── [section]/page.tsx    # Dynamic form section page
+│   │   └── page.tsx              # Application form (inline email + all 9 sections on one page)
 │   ├── matching/page.tsx         # AI matching animation screen
-│   ├── results/page.tsx          # Matched homes + home questions
+│   ├── results/page.tsx          # Matched homes + home questions + "answer all" modal
 │   ├── submit/page.tsx           # Final submission confirmation
 │   ├── admin/
 │   │   ├── page.tsx              # Admin login
@@ -32,7 +32,7 @@ src/
 │   └── api/
 │       ├── applications/route.ts # GET/POST/PATCH applications
 │       ├── homes/route.ts        # GET/POST/PATCH/DELETE homes
-│       ├── match/route.ts        # POST — AI matching via Claude
+│       ├── match/route.ts        # POST — AI matching via Claude Sonnet 4.6
 │       ├── admin/route.ts        # POST/DELETE/GET — admin auth
 │       ├── admin/applications/route.ts  # GET all applications (admin)
 │       └── admin/stats/route.ts  # GET application stats (admin)
@@ -41,8 +41,8 @@ src/
 │   │   ├── question-renderer.tsx # Renders any question type from config
 │   │   └── progress-bar.tsx      # Section progress indicator
 │   ├── matching/
-│   │   ├── envelope-card.tsx     # Animated envelope for matched homes
-│   │   └── letter-modal.tsx      # Modal showing personalized home letter
+│   │   ├── letter-modal.tsx      # Modal showing personalized home letter + video
+│   │   └── all-questions-modal.tsx # Modal for answering all home questions at once
 │   └── ui/                       # Reusable primitives (button, input, textarea, select, modal, etc.)
 ├── config/
 │   └── sections.ts               # All 9 form sections + questions defined here
@@ -59,14 +59,27 @@ src/
 
 supabase/migrations/
 ├── 001_initial_schema.sql        # Tables, indexes, triggers
-└── 002_seed_homes.sql            # 10 residency homes
+├── 002_seed_homes.sql            # 10 residency homes
+└── 003_video_urls.sql            # Video URLs for 6 homes
 
-tests/e2e/
-├── helpers.ts                    # Shared mocks (mockAPIs, mockHomesAPI, etc.)
-└── *.spec.ts                     # 13 test files
+tests/
+├── e2e/
+│   ├── helpers.ts                # Shared mocks (mockAPIs, mockHomesAPI, setupNewUser, etc.)
+│   └── *.spec.ts                 # E2E test files
+└── integration/
+    └── database.spec.ts          # Real Supabase CRUD tests (requires env vars)
 ```
 
 ## Key Patterns
+
+### Email inline — no separate entry page
+
+`/apply` handles everything: when no `application_id` is in localStorage, an email field appears at the top of the form. Sections are visible but disabled until email is submitted. After email submission:
+- New users get an empty form.
+- Returning users get their answers pre-filled.
+- Frozen/submitted users are redirected to `/results` or `/submit`.
+
+The root `/` page is a simple redirect that checks localStorage and routes accordingly.
 
 ### Sections config drives the form
 
@@ -112,6 +125,7 @@ Admin authentication uses a shared secret (`ADMIN_SECRET` env var). On login, th
 | `src/lib/types.ts` | TypeScript interfaces: `Home`, `Application`, `Section`, `Question`, `MatchResult` |
 | `src/lib/schemas.ts` | Zod schemas for API validation: email, answers, match request, home, admin login |
 | `src/components/application/question-renderer.tsx` | Renders any question type from the sections config |
+| `src/components/matching/all-questions-modal.tsx` | Modal for answering all home questions at once |
 | `src/app/globals.css` | Tailwind v4 setup with `@theme {}` block for custom colors and design tokens |
-| `src/app/api/match/route.ts` | AI matching endpoint — sends applicant answers + home prompts to Claude |
+| `src/app/api/match/route.ts` | AI matching endpoint — sends applicant answers + home prompts to Claude Sonnet 4.6 |
 | `tests/e2e/helpers.ts` | Shared test helpers — API mocking, special email addresses, setup functions |
