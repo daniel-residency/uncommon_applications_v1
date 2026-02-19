@@ -143,6 +143,25 @@ export default function ApplyPage() {
     );
   }
 
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const getUnansweredRequired = useCallback(() => {
+    const missing: string[] = [];
+    for (const section of SECTIONS) {
+      for (const q of section.questions) {
+        // Skip conditionals whose parent condition isn't met
+        if (q.conditional) {
+          const depVal = answers[q.conditional.dependsOn];
+          if (depVal !== q.conditional.showWhen) continue;
+        }
+        if (q.required && !answers[q.id]?.trim()) {
+          missing.push(q.id);
+        }
+      }
+    }
+    return missing;
+  }, [answers]);
+
   const formDisabled = !appId;
 
   return (
@@ -273,10 +292,32 @@ export default function ApplyPage() {
         {appId && (
           <div className="mt-12 mb-16">
             {!showFreezeWarning ? (
-              <div className="flex justify-center">
-                <Button size="lg" onClick={() => setShowFreezeWarning(true)}>
+              <div className="flex flex-col items-center gap-3">
+                <Button size="lg" onClick={() => {
+                  const missing = getUnansweredRequired();
+                  if (missing.length > 0) {
+                    setValidationErrors(missing);
+                    // Scroll to first missing field
+                    for (const section of SECTIONS) {
+                      for (const q of section.questions) {
+                        if (missing.includes(q.id)) {
+                          document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth" });
+                          return;
+                        }
+                      }
+                    }
+                  } else {
+                    setValidationErrors([]);
+                    setShowFreezeWarning(true);
+                  }
+                }}>
                   next
                 </Button>
+                {validationErrors.length > 0 && (
+                  <p className="text-xs text-red-500 lowercase">
+                    please answer all required questions before continuing ({validationErrors.length} remaining)
+                  </p>
+                )}
               </div>
             ) : (
               <div className="p-6 rounded-xl border border-border bg-white/40">

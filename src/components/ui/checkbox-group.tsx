@@ -39,10 +39,11 @@ export default function CheckboxGroup({
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {options.map((opt) => (
-          <label
+          <button
             key={opt.value}
+            type="button"
             onClick={() => toggle(opt.value)}
-            className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-md border cursor-pointer transition-colors text-sm lowercase ${
+            className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-md border cursor-pointer transition-colors text-sm lowercase text-left ${
               value.includes(opt.value)
                 ? "border-ink bg-ink text-white"
                 : "border-border hover:border-ink text-ink"
@@ -68,7 +69,7 @@ export default function CheckboxGroup({
               )}
             </div>
             <span>{opt.label}</span>
-          </label>
+          </button>
         ))}
       </div>
       {error && <p className="mt-2 text-xs text-red-500">{error}</p>}

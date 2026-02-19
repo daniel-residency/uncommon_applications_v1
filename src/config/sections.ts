@@ -61,14 +61,14 @@ export const SECTIONS: Section[] = [
         id: "project_link",
         label: "Link to your project (if available, nw if you don't have one)",
         type: "url",
-        required: false,
+        required: true,
         placeholder: "https://",
       },
       {
         id: "demo_video",
         label: "Demo video (if available, nw if you don't have one)",
         type: "url",
-        required: false,
+        required: true,
         placeholder: "https://",
       },
     ],
@@ -227,7 +227,7 @@ export const SECTIONS: Section[] = [
         id: "same_thing",
         label: "Are you working on the same thing?",
         type: "yes_no",
-        required: false,
+        required: true,
         conditional: {
           dependsOn: "applied_before",
           showWhen: "yes",
@@ -237,7 +237,7 @@ export const SECTIONS: Section[] = [
         id: "what_changed",
         label: "What changed since last time?",
         type: "textarea",
-        required: false,
+        required: true,
         conditional: {
           dependsOn: "same_thing",
           showWhen: "yes",
@@ -247,7 +247,7 @@ export const SECTIONS: Section[] = [
         id: "why_pivot",
         label: "Why did you pivot, and what did you learn?",
         type: "textarea",
-        required: false,
+        required: true,
         conditional: {
           dependsOn: "same_thing",
           showWhen: "no",
