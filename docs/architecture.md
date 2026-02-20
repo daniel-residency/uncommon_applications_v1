@@ -74,7 +74,7 @@ tests/
 
 ### Email inline — no separate entry page
 
-`/apply` handles everything: when no `application_id` is in localStorage, an email field appears at the top of the form. Sections are visible but disabled until email is submitted. After email submission:
+`/apply` handles everything: when no `application_id` is in localStorage, an email field appears at the top of the form. Sections are visible but blurred (`blur-[2px]`) until email is submitted. After email submission:
 - New users get an empty form.
 - Returning users get their answers pre-filled.
 - Frozen/submitted users are redirected to `/results` or `/submit`.
@@ -87,7 +87,9 @@ The root `/` page is a simple redirect that checks localStorage and routes accor
 
 Question types supported: `text`, `textarea`, `short_text`, `url`, `select`, `yes_no`, `country`, `multi_checkbox`.
 
-Conditional questions are supported via the `conditional` field (e.g., "What changed since last time?" only shows if "applied_before" is "yes").
+Conditional questions are supported via the `conditional` field (e.g., "What changed since last time?" only shows if "applied_before" is "yes"). When a parent answer changes so a conditional is hidden, the `handleAnswerChange` wrapper in `apply/page.tsx` automatically clears the dependent answer.
+
+The 9 form sections are: about-you, your-work, why-this-idea, progress, competition, the-residency, funding, past-programs, how-found-us.
 
 ### Dual auto-save
 

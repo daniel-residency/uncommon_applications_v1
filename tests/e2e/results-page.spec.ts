@@ -4,7 +4,7 @@ import { uniqueEmail, createMatchedApp, setupWithAppId, getHomes } from "./helpe
 test.describe("Results page", () => {
   let appId: string;
   let homeIds: string[];
-  let homes: { id: string; name: string; video_url: string | null; question: string | null }[];
+  let homes: { id: string; slug: string; name: string; video_url: string | null; question: string | null }[];
 
   test.beforeAll(async () => {
     const email = uniqueEmail();
@@ -27,41 +27,41 @@ test.describe("Results page", () => {
     appId = app.id;
   });
 
-  test("displays matched home cards", async ({ page }) => {
+  test("displays matched home columns", async ({ page }) => {
     await setupWithAppId(page, appId, "/results");
     await page.waitForSelector("h1", { timeout: 15000 });
 
-    const cards = page.locator("button.group");
-    await expect(cards).toHaveCount(3);
+    const columns = page.locator("[data-testid^='column-']");
+    await expect(columns).toHaveCount(3);
   });
 
-  test("clicking card opens letter modal with letter content", async ({ page }) => {
+  test("clicking column opens golden letter with letter content", async ({ page }) => {
     await setupWithAppId(page, appId, "/results");
     await page.waitForSelector("h1", { timeout: 15000 });
 
-    const cards = page.locator("button.group");
-    await cards.first().click();
+    const columns = page.locator("[data-testid^='column-']");
+    await columns.first().click();
     await page.waitForTimeout(500);
 
-    // Modal should be open — look for the personalized greeting
-    await expect(page.getByText("Hi there,")).toBeVisible();
+    // Golden letter should be open — look for the personalized greeting
+    await expect(page.getByText("hi there,")).toBeVisible();
   });
 
-  test("modal closes with Escape", async ({ page }) => {
+  test("golden letter closes with Escape", async ({ page }) => {
     await setupWithAppId(page, appId, "/results");
     await page.waitForSelector("h1", { timeout: 15000 });
 
-    const cards = page.locator("button.group");
-    await cards.first().click();
+    const columns = page.locator("[data-testid^='column-']");
+    await columns.first().click();
     await page.waitForTimeout(500);
-    await expect(page.getByText("Hi there,")).toBeVisible();
+    await expect(page.getByText("hi there,")).toBeVisible();
 
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
-    await expect(page.getByText("Hi there,")).not.toBeVisible();
+    await expect(page.getByText("hi there,")).not.toBeVisible();
   });
 
-  test("home with video shows video player", async ({ page }) => {
+  test("home with video shows 'listen to our community architect' button", async ({ page }) => {
     const homeWithVideo = homes.find((h) => h.video_url);
     if (!homeWithVideo) {
       test.skip();
@@ -71,15 +71,20 @@ test.describe("Results page", () => {
     await setupWithAppId(page, appId, "/results");
     await page.waitForSelector("h1", { timeout: 15000 });
 
-    const cardIndex = homeIds.indexOf(homeWithVideo.id);
-    const cards = page.locator("button.group");
-    await cards.nth(cardIndex).click();
+    const column = page.locator(`[data-testid='column-${homeWithVideo.slug}']`);
+    await column.click();
     await page.waitForTimeout(500);
 
+    // Should see the video button
+    await expect(page.getByText("listen to our community architect")).toBeVisible();
+
+    // Click it to open video modal
+    await page.getByText("listen to our community architect").click();
+    await page.waitForTimeout(300);
     await expect(page.locator("video")).toBeVisible();
   });
 
-  test("home without video hides video area", async ({ page }) => {
+  test("home without video hides video button", async ({ page }) => {
     const homeWithoutVideo = homes.find((h) => !h.video_url);
     if (!homeWithoutVideo) {
       test.skip();
@@ -89,34 +94,14 @@ test.describe("Results page", () => {
     await setupWithAppId(page, appId, "/results");
     await page.waitForSelector("h1", { timeout: 15000 });
 
-    const cardIndex = homeIds.indexOf(homeWithoutVideo.id);
-    const cards = page.locator("button.group");
-    await cards.nth(cardIndex).click();
+    const column = page.locator(`[data-testid='column-${homeWithoutVideo.slug}']`);
+    await column.click();
     await page.waitForTimeout(500);
 
-    await expect(page.locator("video")).not.toBeVisible();
+    await expect(page.getByText("listen to our community architect")).not.toBeVisible();
   });
 
-  test("home with question shows question in modal", async ({ page }) => {
-    const homeWithQuestion = homes.find((h) => h.question);
-    if (!homeWithQuestion) {
-      test.skip();
-      return;
-    }
-
-    await setupWithAppId(page, appId, "/results");
-    await page.waitForSelector("h1", { timeout: 15000 });
-
-    const cardIndex = homeIds.indexOf(homeWithQuestion.id);
-    const cards = page.locator("button.group");
-    await cards.nth(cardIndex).click();
-    await page.waitForTimeout(500);
-
-    await expect(page.locator("text=a question for you")).toBeVisible();
-    await expect(page.locator("textarea")).toBeVisible();
-  });
-
-  test("answer questions button opens all-questions modal", async ({ page }) => {
+  test("answer questions button opens questions card", async ({ page }) => {
     // This button only shows if at least one matched home has a question
     const hasQuestions = homes.some((h) => h.question);
     if (!hasQuestions) {

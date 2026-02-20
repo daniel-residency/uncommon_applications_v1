@@ -32,7 +32,7 @@ Stores applicant data. One row per email address.
 | `email` | `TEXT NOT NULL UNIQUE` | Applicant email — used as the login identifier |
 | `answers` | `JSONB NOT NULL` | All form answers (default `{}`) — see structure below |
 | `status` | `TEXT NOT NULL` | One of: `in_progress`, `frozen`, `submitted`. Enforced by CHECK constraint |
-| `current_section` | `TEXT` | Last visited section ID (e.g., "the-project") |
+| `current_section` | `TEXT` | Last visited section ID (e.g., "your-work") |
 | `matched_home_ids` | `UUID[]` | Array of 3 home UUIDs after AI matching, ordered by fit (best first) |
 | `frozen_at` | `TIMESTAMPTZ` | When the application was frozen (answers locked) |
 | `submitted_at` | `TIMESTAMPTZ` | When the application was finally submitted |
@@ -65,10 +65,11 @@ All answers are stored in a single flat JSONB object on the `applications` row.
   "how_far": "MVP launched...",
   "duration": "6 months, 3 full-time",
   "has_users": "yes",
+  "user_count": "about 50 teams",
   "has_revenue": "no",
+  "revenue_amount": "",
   "competitors": "LegalZoom...",
   "unique_insight": "We understand...",
-  "world_impact": "Democratize access...",
   "what_need": "Mentorship...",
   "how_helps": "Connections to...",
   "looking_cofounder": "yes",

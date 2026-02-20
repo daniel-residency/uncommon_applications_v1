@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>design guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;700&family=Manrope:wght@400;600;700&display=swap');
+
+  @page { size: letter; margin: 0; }
+
+  * {
+    margin: 0; padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Manrope', sans-serif;
+    color: #1A1A2E;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    background: #FAFAFD;
+    background-image:
+      radial-gradient(ellipse at 25% 8%, rgba(123, 143, 212, 0.09) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 85%, rgba(197, 192, 232, 0.07) 0%, transparent 50%),
+      linear-gradient(160deg, #FAFAFD 0%, #EEF0FA 40%, #F5F5FA 70%, #FAFAFD 100%);
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: 0.6in 0.8in;
+  }
+
+  /* ===== page breaks ===== */
+  .page-break {
+    page-break-before: always;
+    padding-top: 0.5in;
+  }
+
+  /* ===== typography ===== */
+  h1 {
+    font-family: 'STIX Two Text', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #1A1A2E;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+    text-transform: lowercase;
+  }
+  h2 {
+    font-family: 'STIX Two Text', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1A1A2E;
+    margin-top: 36px;
+    margin-bottom: 12px;
+    text-transform: lowercase;
+  }
+  h3 {
+    font-family: 'STIX Two Text', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1A1A2E;
+    margin-top: 24px;
+    margin-bottom: 8px;
+    text-transform: lowercase;
+  }
+  p {
+    font-size: 11px;
+    color: #1A1A2E;
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #8E8EA0;
+    margin-bottom: 28px;
+    text-transform: lowercase;
+  }
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #E0E0EA 20%, #E0E0EA 80%, transparent 100%);
+    margin: 32px 0;
+  }
+  em { font-style: normal; color: #7B8FD4; font-weight: 700; }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    background: rgba(240, 241, 248, 0.7);
+    padding: 1px 6px;
+    border-radius: 5px;
+  }
+
+  /* ===== glass classes for swatches ===== */
+  .glass-strong-demo {
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(32px) saturate(1.7);
+    -webkit-backdrop-filter: blur(32px) saturate(1.7);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05), 0 0.5px 0 rgba(255, 255, 255, 0.8), inset 0 1.5px 0 rgba(255, 255, 255, 0.7), inset 0 -0.5px 0 rgba(0, 0, 0, 0.02);
+    border-radius: 22px;
+  }
+  .glass-tint-demo {
+    background: rgba(228, 238, 248, 0.3);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 2px 16px rgba(123, 143, 212, 0.06), 0 0.5px 0 rgba(255, 255, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+  }
+  .glass-demo {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04), 0 0.5px 0 rgba(255, 255, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+  }
+  .glass-receded-demo {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.03), inset 0 0.5px 0 rgba(255, 255, 255, 0.4);
+    border-radius: 18px;
+  }
+
+  /* ===== swatch grid ===== */
+  .swatch-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .swatch {
+    padding: 14px;
+    text-align: center;
+  }
+  .swatch-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #1A1A2E;
+    margin-bottom: 2px;
+    text-transform: lowercase;
+  }
+  .swatch-sub {
+    font-size: 7.5px;
+    color: #8E8EA0;
+    text-transform: lowercase;
+  }
+
+  /* ===== color chips ===== */
+  .color-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .color-chip {
+    width: 80px;
+    text-align: center;
+  }
+  .color-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .color-name {
+    font-size: 8px;
+    font-weight: 700;
+    color: #1A1A2E;
+    text-transform: lowercase;
+  }
+  .color-hex {
+    font-size: 7.5px;
+    color: #8E8EA0;
+  }
+
+  /* ===== type specimen ===== */
+  .type-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 12px;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .type-meta {
+    font-size: 8px;
+    color: #8E8EA0;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* ===== principle cards ===== */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .principle-card {
+    padding: 16px 20px;
+  }
+  .principle-num {
+    font-family: 'STIX Two Text', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #7B8FD4;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .principle-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1A1A2E;
+    margin-bottom: 4px;
+    text-transform: lowercase;
+  }
+  .principle-desc {
+    font-size: 9px;
+    color: #8E8EA0;
+    line-height: 1.5;
+    text-transform: lowercase;
+  }
+
+  /* ===== do / don't ===== */
+  .do-dont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .do-card, .dont-card {
+    padding: 14px 16px;
+    border-radius: 18px;
+  }
+  .do-card {
+    background: rgba(123, 143, 212, 0.08);
+    border: 1px solid rgba(123, 143, 212, 0.12);
+  }
+  .dont-card {
+    background: rgba(197, 192, 232, 0.1);
+    border: 1px solid rgba(197, 192, 232, 0.15);
+  }
+  .do-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #5A6FB8;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-transform: lowercase;
+  }
+  .dont-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #7B73B8;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-transform: lowercase;
+  }
+  .do-item, .dont-item {
+    font-size: 9px;
+    color: #1A1A2E;
+    line-height: 1.55;
+    margin-bottom: 3px;
+    text-transform: lowercase;
+  }
+
+  /* ===== hierarchy demo ===== */
+  .hierarchy-demo {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .hierarchy-tier {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  .tier-label {
+    font-size: 8px;
+    color: #8E8EA0;
+    text-align: right;
+    line-height: 1.4;
+    text-transform: lowercase;
+  }
+  .tier-demo {
+    padding: 12px 16px;
+    text-transform: lowercase;
+  }
+  .tier-demo-text {
+    font-size: 10px;
+    color: #1A1A2E;
+  }
+
+  /* ===== spacing tokens ===== */
+  .spacing-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .spacing-bar {
+    background: #7B8FD4;
+    height: 10px;
+    border-radius: 5px;
+  }
+  .spacing-label {
+    font-size: 8px;
+    color: #8E8EA0;
+    width: 70px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .spacing-val {
+    font-size: 8px;
+    color: #1A1A2E;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== COVER ===== -->
+
+  <h1>design guide</h1>
+  <div class="subtitle">visual language for reports, dashboards, and ui · internal reference</div>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== PHILOSOPHY ===== -->
+
+  <h2>philosophy</h2>
+
+  <p>our design language exists to make information easy to absorb at a glance, beautiful to look at, and honest about what it's showing. every design choice serves the reader's time: the most important thing should be the most visually prominent, and anything secondary should recede without disappearing.</p>
+
+  <div class="principle-grid">
+    <div class="principle-card glass-strong-demo">
+      <div class="principle-num">1</div>
+      <div class="principle-title">hierarchy is the design</div>
+      <div class="principle-desc">the layout should tell the reader what to look at first, second, and third without labels like "summary" or "reference." glass weight, text size, padding, and position do this work. if you need to label something "important," the visual hierarchy isn't working.</div>
+    </div>
+    <div class="principle-card glass-strong-demo">
+      <div class="principle-num">2</div>
+      <div class="principle-title">informative, not prescriptive</div>
+      <div class="principle-desc">present the landscape. name the patterns. show the data. let the reader draw their own conclusions. don't tell people what to do — give them what they need to decide. recommendations only when explicitly asked for.</div>
+    </div>
+    <div class="principle-card glass-strong-demo">
+      <div class="principle-num">3</div>
+      <div class="principle-title">every word earns its space</div>
+      <div class="principle-desc">if information appears once, it shouldn't appear again in different words. shorten ruthlessly — concrete details over vague descriptions. if a chart already shows the data, the text around it should add context, not restate the numbers.</div>
+    </div>
+    <div class="principle-card glass-strong-demo">
+      <div class="principle-num">4</div>
+      <div class="principle-title">glass communicates weight</div>
+      <div class="principle-desc">the glass morphism system isn't decoration — it encodes importance. stronger blur and opacity = primary content. lighter, more translucent = supporting detail. the reader's eye naturally follows the gradient from solid to soft.</div>
+    </div>
+  </div>
+
+  <!-- ===== TYPOGRAPHY ===== -->
+
+  <h2>typography</h2>
+
+  <p>two typefaces. <em>stix two text</em> (serif) carries headlines, numbers, and section titles — anything the eye should land on first. <em>manrope</em> (sans-serif) handles body text, labels, descriptions — the supporting information. all text is lowercase unless a proper noun or acronym demands otherwise.</p>
+
+  <h3>type scale</h3>
+
+  <div class="type-row">
+    <div class="type-meta">stix two text · 700<br>26–32px</div>
+    <div style="font-family: 'STIX Two Text', serif; font-size: 28px; font-weight: 700; text-transform: lowercase; color: #1A1A2E;">page titles</div>
+  </div>
+  <div class="type-row">
+    <div class="type-meta">stix two text · 700<br>14–16px</div>
+    <div style="font-family: 'STIX Two Text', serif; font-size: 15px; font-weight: 700; text-transform: lowercase; color: #1A1A2E;">card headlines, north star values, section titles</div>
+  </div>
+  <div class="type-row">
+    <div class="type-meta">stix two text · 700<br>10–12px</div>
+    <div style="font-family: 'STIX Two Text', serif; font-size: 11px; font-weight: 700; text-transform: lowercase; color: #8E8EA0;">panel titles, section labels, reference headers</div>
+  </div>
+  <div class="type-row">
+    <div class="type-meta">manrope · 700<br>9–10px</div>
+    <div style="font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 700; text-transform: lowercase; color: #1A1A2E;">item titles, finding labels, bold callouts</div>
+  </div>
+  <div class="type-row">
+    <div class="type-meta">manrope · 400<br>8–9px</div>
+    <div style="font-family: 'Manrope', sans-serif; font-size: 9px; text-transform: lowercase; color: #8E8EA0;">descriptions, body text, supporting detail</div>
+  </div>
+  <div class="type-row">
+    <div class="type-meta">manrope · 700<br>7–7.5px</div>
+    <div style="font-family: 'Manrope', sans-serif; font-size: 7px; font-weight: 700; text-transform: lowercase; color: rgba(26, 26, 46, 0.5); letter-spacing: 0.6px;">category labels, uppercase-style micro labels</div>
+  </div>
+
+  <h3>rules</h3>
+
+  <div class="do-dont">
+    <div class="do-card">
+      <div class="do-label">do</div>
+      <div class="do-item">all lowercase everywhere — headings, labels, body</div>
+      <div class="do-item">serif for anything the eye should land on first</div>
+      <div class="do-item">sans-serif for everything supporting</div>
+      <div class="do-item">let text size alone create hierarchy (no bold + large + color stacking)</div>
+    </div>
+    <div class="dont-card">
+      <div class="dont-label">don't</div>
+      <div class="dont-item">title case, sentence case, or all caps (except rare acronyms)</div>
+      <div class="dont-item">mix serif into body paragraphs</div>
+      <div class="dont-item">go below 7px — that's the floor for legibility</div>
+      <div class="dont-item">use manrope for numbers or big stats — stix carries those</div>
+    </div>
+  </div>
+
+  <!-- ===== COLOR ===== -->
+
+  <h2>color</h2>
+
+  <p>a restrained palette. the background does most of the visual work through radial gradients and glass layers. color is reserved for semantic meaning — accent blue marks emphasis, violet marks secondary groupings, and gray handles the rest.</p>
+
+  <div class="color-row">
+    <div class="color-chip">
+      <div class="color-circle" style="background: #1A1A2E;"></div>
+      <div class="color-name">ink</div>
+      <div class="color-hex">#1A1A2E</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-circle" style="background: #7B8FD4;"></div>
+      <div class="color-name">accent blue</div>
+      <div class="color-hex">#7B8FD4</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-circle" style="background: #C5C0E8;"></div>
+      <div class="color-name">soft violet</div>
+      <div class="color-hex">#C5C0E8</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-circle" style="background: #8E8EA0;"></div>
+      <div class="color-name">mid gray</div>
+      <div class="color-hex">#8E8EA0</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-circle" style="background: #F0F1F8;"></div>
+      <div class="color-name">frost</div>
+      <div class="color-hex">#F0F1F8</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-circle" style="background: #FAFAFD;"></div>
+      <div class="color-name">background</div>
+      <div class="color-hex">#FAFAFD</div>
+    </div>
+  </div>
+
+  <h3>semantic usage</h3>
+
+  <p><em>ink #1A1A2E</em> — all primary text, headlines, item titles. never pure black.
+  <br><em>accent blue #7B8FD4</em> — emphasis words in vision text, chart primary bars, accent lines, person names in team lists, validated/positive pills. the one "pop" color.
+  <br><em>soft violet #C5C0E8</em> — secondary chart bars, negative/friction pills, de-emphasized groupings.
+  <br><em>mid gray #8E8EA0</em> — descriptions, supporting text, labels, meta info, section headers in the reference layer. carries the bulk of the supporting text.
+  <br><em>frost #F0F1F8</em> — chart bar tracks, pill backgrounds, subtle fills.
+  <br><em>background #FAFAFD</em> — page base with radial gradient overlays for depth.</p>
+
+  <h3>background</h3>
+
+  <p>the page is never flat white. layer radial gradients to create subtle ambient depth:</p>
+  <p style="font-size: 9.5px; color: #8E8EA0; line-height: 1.5;">
+    <code>radial-gradient(ellipse at 25% 8%, rgba(123, 143, 212, 0.09), transparent 55%)</code> — cool wash, upper left<br>
+    <code>radial-gradient(ellipse at 75% 85%, rgba(197, 192, 232, 0.07), transparent 50%)</code> — warm wash, lower right<br>
+    <code>linear-gradient(160deg, #FAFAFD 0%, #EEF0FA 40%, #F5F5FA 70%, #FAFAFD 100%)</code> — base
+  </p>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== GLASS SYSTEM ===== -->
+
+  <h2>glass system</h2>
+
+  <p>every container is a glass panel. the glass intensity communicates how important the content inside is. this is the primary tool for building visual hierarchy — not borders, not background colors, not headers. four tiers:</p>
+
+  <div class="swatch-row">
+    <div class="swatch glass-strong-demo">
+      <div class="swatch-label">glass-strong</div>
+      <div class="swatch-sub">primary content · 0.58 opacity<br>blur 32px · saturate 1.7<br>border radius 22px</div>
+    </div>
+    <div class="swatch glass-tint-demo">
+      <div class="swatch-label">glass-tint</div>
+      <div class="swatch-sub">emphasized sections · blue-tinted<br>rgba(228, 238, 248, 0.3)<br>blur 28px · saturate 1.5</div>
+    </div>
+    <div class="swatch glass-demo">
+      <div class="swatch-label">glass</div>
+      <div class="swatch-sub">standard containers · 0.45 opacity<br>blur 24px · saturate 1.6<br>border radius 20px</div>
+    </div>
+    <div class="swatch glass-receded-demo">
+      <div class="swatch-label">glass-receded</div>
+      <div class="swatch-sub">reference/background · 0.3 opacity<br>blur 16px · saturate 1.3<br>border radius 18px</div>
+    </div>
+  </div>
+
+  <h3>what makes it feel like glass</h3>
+
+  <p>five properties working together. skip any one and it reads as a flat card, not a glass pane:</p>
+
+  <p style="font-size: 9.5px; line-height: 1.7;">
+    <strong>translucent fill</strong> — <code>rgba(255, 255, 255, 0.3–0.58)</code>. never fully opaque.<br>
+    <strong>backdrop blur</strong> — <code>backdrop-filter: blur(16–32px) saturate(1.3–1.7)</code>. the blur makes the translucency visible.<br>
+    <strong>specular top edge</strong> — <code>inset 0 1.5px 0 rgba(255, 255, 255, 0.7)</code>. simulates light hitting the top edge of a pane.<br>
+    <strong>luminous border</strong> — <code>border: 1px solid rgba(255, 255, 255, 0.3–0.6)</code>. catches light along the full perimeter.<br>
+    <strong>soft outer shadow</strong> — <code>0 4px 24px rgba(0, 0, 0, 0.05)</code>. lifts the pane off the background.
+  </p>
+
+  <h3>choosing a tier</h3>
+
+  <div class="hierarchy-demo">
+    <div class="hierarchy-tier">
+      <div class="tier-label">glass-strong<br><span style="color: #7B8FD4;">scan layer</span></div>
+      <div class="tier-demo glass-strong-demo">
+        <div class="tier-demo-text">the thing the reader's eye hits first. north star cards, metric cards, primary data panels. the content someone needs to absorb in 30 seconds.</div>
+      </div>
+    </div>
+    <div class="hierarchy-tier">
+      <div class="tier-label">glass-tint<br><span style="color: #7B8FD4;">callout</span></div>
+      <div class="tier-demo glass-tint-demo">
+        <div class="tier-demo-text">sections that need emphasis with a semantic tint — feedback results, validated findings, key callouts. the blue tint signals "this is a distinct category of information."</div>
+      </div>
+    </div>
+    <div class="hierarchy-tier">
+      <div class="tier-label">glass<br><span style="color: #7B8FD4;">supporting</span></div>
+      <div class="tier-demo glass-demo">
+        <div class="tier-demo-text">standard containers for data that matters but isn't primary. charts, blocker lists, stakeholder grids. the bulk of a page's structured content.</div>
+      </div>
+    </div>
+    <div class="hierarchy-tier">
+      <div class="tier-label">glass-receded<br><span style="color: #7B8FD4;">reference</span></div>
+      <div class="tier-demo glass-receded-demo">
+        <div class="tier-demo-text">information that's there to point at during discussion. stakeholder details, team perspectives, methodology notes. smaller text, thinner glass.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== INFORMATION HIERARCHY ===== -->
+
+  <h2>information hierarchy</h2>
+
+  <p>every page — report, dashboard, or ui view — should have two layers. the reader should be able to identify which is which <em>from the visual weight alone</em>, never from a label.</p>
+
+  <h3>scan layer</h3>
+
+  <p>the content someone absorbs in 30 seconds if they walk in late. uses <code>glass-strong</code> and <code>glass-tint</code>, larger text (10–16px body, 14–28px headlines), more generous padding (14–18px). this layer sits at the top of the page and visually dominates. it should contain:</p>
+
+  <p style="font-size: 9.5px; color: #8E8EA0; line-height: 1.7; padding-left: 8px;">
+    — the framing statement or vision (what is this about, why does it matter)<br>
+    — the 2–4 most important structural facts (north stars, key metrics, scope)<br>
+    — the 2–4 highest-signal data points (what's working, what's broken)
+  </p>
+
+  <h3>supporting layer</h3>
+
+  <p>detail the team references during discussion. uses <code>glass</code> and <code>glass-receded</code>, smaller text (7.5–9px), tighter padding (11–14px). this layer occupies the lower portion of the page and visually recedes. the transition from scan to supporting should feel like the page is gently falling away — not like hitting a wall labeled "appendix."</p>
+
+  <h3>ordering within each layer</h3>
+
+  <p>content is ordered by importance to the reader, not by category. if feedback is more important than data, feedback sits above data. if stakeholder context is more important than team perspectives, it goes first. never default to a fixed template — ask <em>"what does this audience need to see first?"</em> and let that drive the layout.</p>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== COMPONENTS ===== -->
+
+  <h2>components</h2>
+
+  <h3>metric / north star cards</h3>
+
+  <p>glass-strong panels with a micro label (<code>7–7.5px, 0.5 opacity ink, letterspaced</code>), a serif headline (<code>14–16px, 700 weight</code>), and an optional description line (<code>8–8.5px, mid gray</code>). use these for the 2–4 most important structural facts on any page. grid them <code>1fr 1fr</code> or <code>repeat(3–4, 1fr)</code> depending on count.</p>
+
+  <h3>signal cards (validated / blockers)</h3>
+
+  <p>glass-tint panels, always in pairs. one for positive signal, one for negative. top label in accent blue or soft violet at <code>7.5px letterspaced 700</code>. items inside use <code>9–10px bold title + 8–9px gray description</code>. these are for surfacing the most important findings from any data source — label them by source (e.g. "from ca feedback — 5 interviews") so the reader knows where the signal comes from.</p>
+
+  <h3>bar charts</h3>
+
+  <p>horizontal bars only. rounded tracks (<code>border-radius: 50px</code>) with inset shadow for depth. fill bars use gradient fills — <code>primary: #8FA3DE → #7B8FD4</code>, <code>secondary: #D0CCF0 → #C5C0E8</code>. labels on the left, count on the right in serif. keep labels descriptive and concrete — "hiring — co-founders, specialist engineers, sales hires" not just "hiring." bar width scales proportionally to the max value.</p>
+
+  <h3>pills / tags</h3>
+
+  <p>rounded capsules (<code>border-radius: 50px</code>) at <code>5.5–7px</code>. positive: accent blue fill at 0.12 opacity, blue text, subtle blue border. negative: violet fill at 0.2, violet text. use sparingly — one pill per item max. pills should add a scannable semantic signal, not replace the label.</p>
+
+  <h3>dividers</h3>
+
+  <p>gradient lines, never solid: <code>linear-gradient(90deg, transparent, #E0E0EA, transparent)</code>. 1px height. use between major sections in the scan layer. between scan and supporting, the glass weight change usually provides enough separation — add a divider only if the transition feels ambiguous.</p>
+
+  <h3>team / perspective lists</h3>
+
+  <p>bulleted lists inside a glass panel. each line: <code>name</code> in accent blue bold, <code>—</code> separator, then the perspective in ink. separated by <code>1px solid rgba(224, 224, 234, 0.3)</code> dividers. keep each perspective to one sentence.</p>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== LAYOUT ===== -->
+
+  <h2>layout</h2>
+
+  <h3>page dimensions</h3>
+
+  <p>reports: one letter page (<code>8.5 × 11in</code>), <code>0.45–0.5in</code> top padding, <code>0.7in</code> sides, <code>0.35–0.4in</code> bottom. always print-to-pdf from the browser to preserve glass effects and google fonts. set <code>@page { size: letter; margin: 0; }</code> and handle padding on the body.</p>
+
+  <h3>grids</h3>
+
+  <p style="font-size: 9.5px; color: #8E8EA0; line-height: 1.7; padding-left: 8px;">
+    <strong style="color: #1A1A2E;">2-column:</strong> <code>1fr 1fr</code> — north stars, signal card pairs, side-by-side panels<br>
+    <strong style="color: #1A1A2E;">2-column weighted:</strong> <code>7fr 3fr</code> or <code>3fr 2fr</code> — chart + context, data + key stats<br>
+    <strong style="color: #1A1A2E;">3-column:</strong> <code>repeat(3, 1fr)</code> — reference panels, team perspectives<br>
+    <strong style="color: #1A1A2E;">4-column:</strong> <code>repeat(4, 1fr)</code> — stakeholder cards, metric cards<br>
+    gap: <code>12–14px</code> throughout. never mix gap sizes on the same page.
+  </p>
+
+  <h3>spacing tokens</h3>
+
+  <div style="margin-bottom: 16px;">
+    <div class="spacing-row">
+      <div class="spacing-label">between sections</div>
+      <div class="spacing-bar" style="width: 64px;"></div>
+      <div class="spacing-val">14–18px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">grid gap</div>
+      <div class="spacing-bar" style="width: 52px;"></div>
+      <div class="spacing-val">12–14px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">card padding</div>
+      <div class="spacing-bar" style="width: 52px;"></div>
+      <div class="spacing-val">12–18px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">item spacing</div>
+      <div class="spacing-bar" style="width: 28px;"></div>
+      <div class="spacing-val">5–8px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">label → content</div>
+      <div class="spacing-bar" style="width: 20px;"></div>
+      <div class="spacing-val">4–6px</div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== WRITING ===== -->
+
+  <h2>writing</h2>
+
+  <p>all text is lowercase. first person where a voice is needed. concise, concrete, and informative — name the thing, describe the thing, move on. the writing style mirrors the visual style: no decoration that doesn't earn its space.</p>
+
+  <div class="do-dont">
+    <div class="do-card">
+      <div class="do-label">do</div>
+      <div class="do-item">"10 of 15 min spent typing. 3/5 cas raised this."</div>
+      <div class="do-item">"hiring — co-founders, specialist engineers, sales hires"</div>
+      <div class="do-item">"cas didn't ask for penelope. adoption has to be earned."</div>
+      <div class="do-item">"data concentrated in weeks 2–3"</div>
+    </div>
+    <div class="dont-card">
+      <div class="dont-label">don't</div>
+      <div class="dont-item">"the data suggests that a significant proportion of time is spent on manual entry activities"</div>
+      <div class="dont-item">"team building and recruitment challenges"</div>
+      <div class="dont-item">"it is recommended that the team consider..."</div>
+      <div class="dont-item">"as we can see from the chart above..."</div>
+    </div>
+  </div>
+
+  <h3>key rules</h3>
+
+  <p style="font-size: 9.5px; line-height: 1.7;">
+    <strong>no redundancy.</strong> if a chart shows the data, don't restate it in prose. add context the chart can't carry — sample size, time window, caveats.<br>
+    <strong>no prescriptions.</strong> present findings, not recommendations. "cas want weekly objectives" not "we should implement weekly objectives."<br>
+    <strong>concrete over abstract.</strong> "3d printers, china supply chain delays" not "equipment and logistics challenges."<br>
+    <strong>source your claims.</strong> label where findings come from — "from ca feedback — 5 interviews" or "30 of 74 residents have check-ins."<br>
+    <strong>one sentence per perspective.</strong> team quotes, stakeholder descriptions, and finding descriptions should each fit in one line.
+  </p>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== PRINT ===== -->
+
+  <h2>rendering</h2>
+
+  <h3>browser print-to-pdf (preferred)</h3>
+
+  <p>open the html in chrome or safari and print to pdf. this preserves backdrop-filter glass effects, google fonts, and gradient backgrounds. set <code>-webkit-print-color-adjust: exact</code> and <code>print-color-adjust: exact</code> on html and body. no @media print overrides — the page should look identical on screen and paper.</p>
+
+  <h3>fallback (legacy renderers)</h3>
+
+  <p>if rendering with a tool that doesn't support backdrop-filter (wkhtmltopdf, older puppeteer), glass panels degrade to solid white with a border. this is acceptable but not preferred. for these environments, replace translucent backgrounds with solid <code>#FFFFFF</code> or <code>#F8F8FC</code> and drop the blur/saturate filters.</p>
+
+  <h3>fonts</h3>
+
+  <p>stix two text and manrope load from google fonts. in offline environments, they fall back to the system serif (liberation serif / times) and system sans-serif (liberation sans / arial). the design works with fallbacks but loses some of its character — when possible, ensure google fonts access or embed the woff2 files.</p>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== MATCHING FLOW ===== -->
+
+  <h2>matching flow</h2>
+
+  <p>the matching flow uses a classical architectural theme with cream/beige tones and golden accents, distinct from the main application's glass-panel aesthetic.</p>
+
+  <h3>golden theme tokens</h3>
+
+  <p>
+    <code>--color-gold: #C5A55A</code> — primary golden accent<br>
+    <code>--color-gold-light: #D4B96A</code> — lighter gold for highlights<br>
+    <code>--color-gold-dark: #A68A3E</code> — darker gold for depth<br>
+    <code>--color-cream: #F5F0E8</code> — base background<br>
+    <code>--color-cream-dark: #E8E0D0</code> — pillar edges, shadows<br>
+    <code>--color-parchment: #F9F5ED</code> — arch interiors<br>
+    <code>--color-marble: #FAF8F5</code> — lightest marble tone
+  </p>
+
+  <h3>architectural background</h3>
+
+  <p>cream base with three arched alcoves using <code>border-radius: 50% 50% 0 0</code> on tall divs. subtle inset shadows on pillars for depth. side arches hide on mobile, center arch stretches full width. shared by both loading and results pages via <code>&lt;ArchBackground&gt;</code>.</p>
+
+  <h3>column pedestal</h3>
+
+  <p>replaces magazine-style gradient cards. each matched home is shown as a classical column with: golden ornamental capital (cornice, dentil band, lower molding), marble shaft with gold side trim, white recessed panel showing home name and location, gold base and feet. telescope icon floats above at an angle. hover: subtle scale + telescope rotation shift. <code>data-testid=column-{slug}</code> for test selectors.</p>
+
+  <h3>golden letter overlay</h3>
+
+  <p>replaces the white modal letter. golden gradient card (<code>#E8C840 → #B89828</code>) centered on screen with dark text. light backdrop (<code>bg-black/20</code>) instead of heavy dark overlay. contains personalized letter text, home signature, "close" link at bottom-left, and conditional "listen to our community architect" link at bottom-right (only if home has video_url). no inline video or question section — those are separate components.</p>
+
+  <h3>video modal</h3>
+
+  <p>white container, portrait aspect (9:16). X close button top-right. html5 video with controls and autoplay. z-index above golden letter (110/111) so it overlays on top. triggered from golden letter's video link.</p>
+
+  <h3>questions floating card</h3>
+
+  <p>replaces the full-screen all-questions modal. white card centered on page with very light backdrop (<code>bg-black/10</code>). "questions" title in serif. for each home with a question: home name label, question text, textarea. dark "submit" button closes the card. answers auto-save on change via the same mechanism as before.</p>
+
+  <h3>golden button style</h3>
+
+  <p>the "answer questions" button uses a golden gradient background: <code>linear-gradient(135deg, #D4B040 0%, #C5A030 50%, #A88820 100%)</code> with white text and a subtle gold shadow. used on the results page when questions remain unanswered.</p>
+
+</body>
+</html>

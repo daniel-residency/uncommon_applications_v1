@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 
   const systemPrompt = `You are an AI matching system for a residency program. You will be given an applicant's answers and descriptions of available homes. Your job is to rank the top ${matchCount} homes that would be the best fit for this applicant.
 
-Consider the applicant's project, background, interests, work style, and goals. Match them with homes whose culture, focus, and community would help them thrive.
+Consider the applicant's work, background, interests, work style, and goals. Match them with homes whose culture, focus, and community would help them thrive.
 
 Return ONLY a valid JSON array of exactly ${matchCount} objects with "homeId" (the UUID) and "rank" (1=best, 2=second, 3=third). No other text.
 

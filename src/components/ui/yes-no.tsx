@@ -14,6 +14,7 @@ export default function YesNo({ label, value, onChange, required, error }: YesNo
       {label && (
         <label className="block text-sm text-ink font-semibold mb-1.5 lowercase">
           {label}
+          {required && <span className="text-red-400 ml-0.5">*</span>}
         </label>
       )}
       <div className="flex gap-2">

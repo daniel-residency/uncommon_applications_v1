@@ -3,31 +3,37 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Application, Home } from "@/lib/types";
-import LetterModal from "@/components/matching/letter-modal";
-import AllQuestionsModal from "@/components/matching/all-questions-modal";
-import Button from "@/components/ui/button";
+import ArchBackground from "@/components/matching/arch-background";
+import GoldenLetterOverlay from "@/components/matching/golden-letter-overlay";
+import VideoModal from "@/components/matching/video-modal";
+import QuestionsCard from "@/components/matching/questions-card";
 
-const HOME_COVERS: Record<string, string> = {
-  vienna: "linear-gradient(160deg, #4A6741 0%, #2D4A28 30%, #3A5A35 50%, #1A3A1A 80%, #0D2D0D 100%)",
-  homebrew: "linear-gradient(160deg, #D4A060 0%, #B8844A 20%, #8B6A40 40%, #6A5030 60%, #4A3A20 80%, #3A2A18 100%)",
-  arcadia: "linear-gradient(160deg, #5A8A4A 0%, #3A7A3A 25%, #2A6A2A 50%, #1A5A1A 75%, #0A4A0A 100%)",
-  sf2: "linear-gradient(160deg, #7B8FD4 0%, #5A6FB8 40%, #4A5FA8 70%, #3A4F98 100%)",
-  inventors: "linear-gradient(160deg, #9B7BB8 0%, #8A6AA8 40%, #7B5B98 70%, #5B3B78 100%)",
-  bangalore: "linear-gradient(160deg, #D4A84A 0%, #C8983A 40%, #B88A2A 70%, #986A1A 100%)",
-  biopunk: "linear-gradient(160deg, #4A8A7A 0%, #3A7A6A 40%, #2A6A5A 70%, #1A4A3A 100%)",
-  "c-house": "linear-gradient(160deg, #D4451A 0%, #B8350E 40%, #9A2A08 70%, #7A1A04 100%)",
-  cornell: "linear-gradient(160deg, #B31B1B 0%, #9A1515 40%, #7A0E0E 70%, #5A0808 100%)",
-  odyssey: "linear-gradient(160deg, #1B365D 0%, #152A4A 40%, #0E1E38 70%, #081428 100%)",
-  sf_parc: "linear-gradient(160deg, #7B5B98 0%, #6A4A88 40%, #5A3A78 70%, #4A2A68 100%)",
+/*
+ * Layout constants from Figma (1440×900 frame).
+ * Every position is expressed as a % of the viewport so
+ * the result is pixel-perfect at 1440 × 900 and scales
+ * proportionally at other sizes.
+ *
+ * Slot order: 0 = left, 1 = center, 2 = right
+ */
+const LEFT_SLOT = {
+  pillar: { left: "-6.667%", top: "46%", width: "45.139%" },
+  scroll: { left: "8.958%", top: "42.444%", width: "13.889%" },
+};
+const CENTER_SLOT = {
+  pillar: { left: "23.611%", top: "29.556%", width: "52.708%" },
+  scroll: { left: "42.014%", top: "25.889%", width: "15.903%" },
+};
+const RIGHT_SLOT = {
+  pillar: { left: "61.528%", top: "46%", width: "45.139%" },
+  scroll: { left: "77.153%", top: "42.444%", width: "13.889%" },
 };
 
-function getHomeCover(home: Home) {
-  if (home.slug && HOME_COVERS[home.slug]) return HOME_COVERS[home.slug];
-  const lower = home.name.toLowerCase();
-  for (const [k, v] of Object.entries(HOME_COVERS)) {
-    if (lower.includes(k)) return v;
-  }
-  return "linear-gradient(160deg, #5A6A7A 0%, #3A4A5A 60%, #1A2A3A 100%)";
+/** Map home count to slot assignments (supports 1–3 homes) */
+function getSlots(count: number) {
+  if (count === 1) return [CENTER_SLOT];
+  if (count === 2) return [LEFT_SLOT, RIGHT_SLOT];
+  return [LEFT_SLOT, CENTER_SLOT, RIGHT_SLOT];
 }
 
 export default function ResultsPage() {
@@ -36,6 +42,7 @@ export default function ResultsPage() {
   const [matchedHomes, setMatchedHomes] = useState<Home[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [showAllQuestions, setShowAllQuestions] = useState(false);
+  const [showVideo, setShowVideo] = useState<string | null>(null);
   const [homeAnswers, setHomeAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -124,118 +131,197 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-mid-gray text-sm lowercase">loading your matches...</p>
-      </div>
+      <ArchBackground>
+        <div className="h-full flex items-center justify-center">
+          <p className="text-mid-gray text-sm lowercase">loading your matches...</p>
+        </div>
+      </ArchBackground>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-8 py-12">
-      <div className="w-full max-w-[960px] text-center">
-        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink lowercase mb-3 animate-fade-in">
-          your matches
+    <ArchBackground>
+      <div className="relative w-full h-full">
+        {/* ── Title ── */}
+        <h1
+          className="absolute left-1/2 -translate-x-1/2 text-center lowercase animate-fade-in"
+          style={{
+            top: "9.2%",
+            width: "29.2%",
+            fontFamily: "'STIX Two Text', serif",
+            fontSize: "clamp(28px, 3.33vw, 48px)",
+            fontWeight: 400,
+            letterSpacing: "-1.44px",
+            lineHeight: "1.1",
+            color: "#000",
+          }}
+        >
+          we think these homes<br />could be a great fit
         </h1>
-        <p className="text-sm text-mid-gray lowercase mb-12 sm:mb-16 animate-fade-in-delay max-w-[420px] mx-auto leading-relaxed">
-          we found {matchedHomes.length} amazing houses for you! click each to
-          learn more and answer their question.
+
+        {/* ── Subtitle ── */}
+        <p
+          className="absolute left-1/2 -translate-x-1/2 text-center lowercase animate-fade-in-delay"
+          style={{
+            top: "22.2%",
+            width: "29.2%",
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: "clamp(14px, 1.667vw, 24px)",
+            fontWeight: 500,
+            letterSpacing: "-0.72px",
+            lineHeight: "1.1",
+            color: "rgba(0,0,0,0.7)",
+          }}
+        >
+          open each scroll to learn more
         </p>
 
-        {/* magazine cards */}
-        <div className="flex justify-center items-center gap-4 sm:gap-5 mb-12 sm:mb-14">
-          {matchedHomes.map((home, idx) => {
-            const cover = getHomeCover(home);
-            const isCenter = idx === 1;
-            const cardWidth = isCenter ? 230 : 210;
-            const cardHeight = isCenter ? 310 : 285;
-
-            return (
-              <button
-                key={home.id}
-                onClick={() => setSelectedIdx(idx)}
-                className="group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03] animate-fade-in"
+        {/* ── Pillars ── */}
+        {matchedHomes.map((home, idx) => {
+          const slots = getSlots(matchedHomes.length);
+          const slot = slots[idx];
+          if (!slot) return null;
+          return (
+            <div key={home.id}>
+              {/* pillar image */}
+              <img
+                src="/pillar.png"
+                alt=""
+                className="absolute pointer-events-none"
                 style={{
-                  width: cardWidth,
-                  height: cardHeight,
-                  animationDelay: `${idx * 0.15}s`,
-                  animationFillMode: "both",
-                  background: cover,
-                  boxShadow: isCenter
-                    ? "0 16px 48px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.12)"
-                    : "0 10px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)",
-                  zIndex: isCenter ? 2 : 1,
+                  left: slot.pillar.left,
+                  top: slot.pillar.top,
+                  width: slot.pillar.width,
+                  height: "auto",
                 }}
-              >
-                {/* dark gradient overlay for text readability */}
-                <div
-                  className="absolute inset-0"
-                  style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.5) 100%)" }}
-                />
+              />
+              {/* scroll image */}
+              <img
+                src="/scroll.png"
+                alt="scroll"
+                className="absolute pointer-events-none"
+                style={{
+                  left: slot.scroll.left,
+                  top: slot.scroll.top,
+                  width: slot.scroll.width,
+                  height: "auto",
+                }}
+              />
+              {/* clickable area over scroll + pillar top */}
+              <button
+                data-testid={`column-${home.slug}`}
+                onClick={() => setSelectedIdx(idx)}
+                className="absolute cursor-pointer z-[5] transition-transform duration-300 hover:scale-[1.03]"
+                style={{
+                  left: slot.scroll.left,
+                  top: slot.scroll.top,
+                  width: slot.scroll.width,
+                  aspectRatio: "1",
+                }}
+              />
+            </div>
+          );
+        })}
 
-                {/* home name - magazine cover style */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                  <h3 className="font-serif text-white lowercase leading-[0.9]" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-                    <span className="block font-bold italic" style={{ fontSize: isCenter ? "40px" : "36px" }}>
-                      {home.name.toLowerCase().replace(" residency", "").replace("the ", "")}
-                    </span>
-                    <span className="block font-bold italic mt-1 text-white/85" style={{ fontSize: isCenter ? "32px" : "28px" }}>
-                      house
-                    </span>
-                  </h3>
-                </div>
+        {/* ── Bottom fade gradient (Figma: y=708 → y=900, transparent→white) ── */}
+        <div
+          className="absolute left-0 right-0 pointer-events-none z-[3]"
+          style={{
+            top: "78.67%",
+            bottom: 0,
+            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)",
+          }}
+        />
 
-                {/* question indicator */}
-                {home.question && (
-                  <div className="absolute top-3 right-3">
-                    <div className={`w-2 h-2 rounded-full ${homeAnswers[`home_${home.id}`]?.trim() ? "bg-green-400" : "bg-white/50"}`} />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* submit / answer section */}
-        <div className="animate-fade-in flex flex-col items-center gap-3" style={{ animationDelay: "0.5s", animationFillMode: "both" }}>
-          <Button
-            onClick={allAnswered ? handleSubmit : () => setShowAllQuestions(true)}
-            disabled={submitting}
-            loading={submitting}
-            size="lg"
-          >
-            {allAnswered ? "submit your application" : "answer questions"}
-          </Button>
+        {/* ── Button area ── */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 z-[6] animate-fade-in flex flex-col items-center"
+          style={{ top: "85.1%", animationDelay: "0.5s", animationFillMode: "both" }}
+        >
+          {allAnswered ? (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="lowercase cursor-pointer text-white font-semibold tracking-wide disabled:opacity-60"
+              style={{
+                width: 305,
+                height: 76,
+                borderRadius: 10,
+                background: "linear-gradient(90deg, #AE8625 0%, #F7EF8A 40%, #D2AC47 75%, #EDC967 100%)",
+                boxShadow: "0 6px 20px rgba(247,239,138,0.35)",
+                border: "none",
+                fontFamily: "'Manrope', sans-serif",
+                fontSize: 28,
+                fontWeight: 600,
+                letterSpacing: "-0.84px",
+                color: "#000",
+              }}
+            >
+              {submitting ? "..." : "submit your application"}
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAllQuestions(true)}
+              className="lowercase cursor-pointer"
+              style={{
+                width: 305,
+                height: 76,
+                borderRadius: 10,
+                background: "linear-gradient(90deg, #AE8625 0%, #F7EF8A 40%, #D2AC47 75%, #EDC967 100%)",
+                boxShadow: "0 6px 20px rgba(247,239,138,0.35)",
+                border: "none",
+                fontFamily: "'Manrope', sans-serif",
+                fontSize: 28,
+                fontWeight: 600,
+                letterSpacing: "-0.84px",
+                color: "#000",
+              }}
+            >
+              answer questions
+            </button>
+          )}
 
           {homesWithQuestions.length > 0 && !allAnswered && (
-            <p className="text-xs text-mid-gray mt-1 lowercase">
+            <p className="text-xs text-mid-gray mt-2 lowercase">
               {answeredCount}/{homesWithQuestions.length} questions answered
             </p>
           )}
         </div>
-      </div>
 
-      {/* letter modal */}
-      {selectedIdx !== null && matchedHomes[selectedIdx] && (
-        <LetterModal
-          home={matchedHomes[selectedIdx]}
-          open={true}
-          onClose={() => setSelectedIdx(null)}
-          applicantName={application?.answers?.citizenship ? "" : "there"}
-          homeAnswer={homeAnswers[`home_${matchedHomes[selectedIdx].id}`] || ""}
-          onAnswerChange={(value) =>
-            saveHomeAnswer(matchedHomes[selectedIdx].id, value)
-          }
+        {/* ── Golden letter overlay ── */}
+        {selectedIdx !== null && matchedHomes[selectedIdx] && (
+          <GoldenLetterOverlay
+            home={matchedHomes[selectedIdx]}
+            open={true}
+            onClose={() => setSelectedIdx(null)}
+            applicantName={application?.answers?.citizenship ? "" : "there"}
+            onVideoOpen={() => {
+              const videoUrl = matchedHomes[selectedIdx].video_url;
+              if (videoUrl) {
+                setShowVideo(videoUrl);
+              }
+            }}
+          />
+        )}
+
+        {/* ── Video modal ── */}
+        {showVideo && (
+          <VideoModal
+            videoUrl={showVideo}
+            open={true}
+            onClose={() => setShowVideo(null)}
+          />
+        )}
+
+        {/* ── Questions card ── */}
+        <QuestionsCard
+          open={showAllQuestions}
+          onClose={() => setShowAllQuestions(false)}
+          homes={matchedHomes}
+          homeAnswers={homeAnswers}
+          onAnswerChange={saveHomeAnswer}
         />
-      )}
-
-      {/* all questions modal */}
-      <AllQuestionsModal
-        open={showAllQuestions}
-        onClose={() => setShowAllQuestions(false)}
-        homes={matchedHomes}
-        homeAnswers={homeAnswers}
-        onAnswerChange={saveHomeAnswer}
-      />
-    </div>
+      </div>
+    </ArchBackground>
   );
 }

@@ -13,6 +13,7 @@ interface QuestionRendererProps {
   value: string;
   onChange: (value: string) => void;
   allAnswers: Record<string, string>;
+  error?: boolean;
 }
 
 export default function QuestionRenderer({
@@ -20,6 +21,7 @@ export default function QuestionRenderer({
   value,
   onChange,
   allAnswers,
+  error,
 }: QuestionRendererProps) {
   // Check conditional visibility
   if (question.conditional) {
@@ -28,6 +30,8 @@ export default function QuestionRenderer({
       return null;
     }
   }
+
+  const errorMsg = error ? "required" : undefined;
 
   switch (question.type) {
     case "textarea":
@@ -39,6 +43,7 @@ export default function QuestionRenderer({
           required={question.required}
           placeholder={question.placeholder}
           helpText={question.helpText}
+          error={errorMsg}
         />
       );
 
@@ -60,6 +65,7 @@ export default function QuestionRenderer({
               ? `${(value || "").length}/${question.maxLength} characters`
               : question.helpText
           }
+          error={errorMsg}
         />
       );
 
@@ -73,6 +79,7 @@ export default function QuestionRenderer({
           required={question.required}
           placeholder={question.placeholder || "https://"}
           helpText={question.helpText}
+          error={errorMsg}
         />
       );
 
@@ -84,6 +91,7 @@ export default function QuestionRenderer({
           onChange={(e) => onChange(e.target.value)}
           required={question.required}
           options={question.options || []}
+          error={errorMsg}
         />
       );
 
@@ -94,6 +102,7 @@ export default function QuestionRenderer({
           value={value || ""}
           onChange={onChange}
           required={question.required}
+          error={errorMsg}
         />
       );
 
@@ -104,6 +113,7 @@ export default function QuestionRenderer({
           value={value || ""}
           onChange={onChange}
           required={question.required}
+          error={errorMsg}
         />
       );
 
@@ -116,6 +126,7 @@ export default function QuestionRenderer({
           onChange={(vals) => onChange(vals.join("|"))}
           required={question.required}
           helpText={question.helpText}
+          error={errorMsg}
         />
       );
 

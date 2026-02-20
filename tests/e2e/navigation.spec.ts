@@ -8,7 +8,7 @@ test.describe("Navigation", () => {
 
     const nav = page.locator("nav");
     const sectionTitles = [
-      "about you", "the project", "why this idea", "progress",
+      "about you", "your work", "why this idea", "progress",
       "competition", "the residency", "funding", "past programs", "how you found us",
     ];
 
@@ -32,10 +32,10 @@ test.describe("Navigation", () => {
     const email = uniqueEmail();
     await enterEmail(page, email);
 
-    await page.locator("section#the-project").scrollIntoViewIfNeeded();
+    await page.locator("section#your-work").scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
 
-    const link = page.locator("nav button:has-text('the project')");
+    const link = page.locator("nav button:has-text('your work')");
     await expect(link).toHaveClass(/font-bold/);
   });
 
@@ -46,7 +46,7 @@ test.describe("Navigation", () => {
     const logo = page.locator('nav img[alt="the residency"]');
     await expect(logo).toBeVisible();
     const src = await logo.getAttribute("src");
-    expect(src).toBe("/logo.png");
+    expect(src).toBe("/logo.svg");
   });
 
   test("save status shows in sidebar after typing", async ({ page }) => {

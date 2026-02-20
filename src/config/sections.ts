@@ -7,7 +7,7 @@ export const SECTIONS: Section[] = [
     questions: [
       {
         id: "citizenship",
-        label: "What is your country of citizenship?",
+        label: "what is your country of citizenship?",
         type: "country",
         required: true,
       },
@@ -16,7 +16,7 @@ export const SECTIONS: Section[] = [
         label: "Which Residency locations are you open to?",
         type: "multi_checkbox",
         required: true,
-        helpText: "Select all that apply",
+        helpText: "select all that apply",
         options: [
           { label: "San Francisco, CA", value: "San Francisco, CA" },
           { label: "New York, NY", value: "New York, NY" },
@@ -25,25 +25,26 @@ export const SECTIONS: Section[] = [
           { label: "Bangalore, India", value: "Bangalore, India" },
           { label: "Cambridge, MA", value: "Cambridge, MA" },
           { label: "Ithaca, NY", value: "Ithaca, NY" },
+          { label: "London, UK", value: "London, UK" },
         ],
       },
       {
         id: "accomplishments",
-        label:
-          "What past two prior accomplishments are you the most proud of?",
+        label: "what are 2 things you are most proud of?",
         type: "textarea",
         required: true,
-        placeholder: "Tell us about your proudest achievements...",
+        placeholder: "two things you're most proud of...",
       },
     ],
   },
   {
-    id: "the-project",
-    title: "The Project",
+    id: "your-work",
+    title: "Your Work",
     questions: [
       {
         id: "pitch",
-        label: "Describe what you're building in 50 characters or less.",
+        label:
+          "describe what you're building or investigating in 50 characters or less.",
         type: "short_text",
         required: true,
         maxLength: 50,
@@ -52,23 +53,25 @@ export const SECTIONS: Section[] = [
       {
         id: "details",
         label:
-          "Add any details that we might be interested in that you couldn't fit in 50 characters.",
+          "add any details that we might be interested in that you couldn't fit in 50 characters.",
         type: "textarea",
         required: true,
-        placeholder: "Tell us more about your project...",
+        placeholder: "anything you couldn't fit above...",
       },
       {
         id: "project_link",
-        label: "Link to your project (if available, nw if you don't have one)",
+        label:
+          "link to your work (if available, nw if you don't have one)",
         type: "url",
-        required: true,
+        required: false,
         placeholder: "https://",
       },
       {
         id: "demo_video",
-        label: "Demo video (if available, nw if you don't have one)",
+        label:
+          "demo video (if available, nw if you don't have one)",
         type: "url",
-        required: true,
+        required: false,
         placeholder: "https://",
       },
     ],
@@ -79,17 +82,17 @@ export const SECTIONS: Section[] = [
     questions: [
       {
         id: "why_this",
-        label: "Why did you pick this to work on?",
+        label: "why did you pick this to work on?",
         type: "textarea",
         required: true,
-        placeholder: "What drew you to this problem?",
+        placeholder: "what drew you to this?",
       },
       {
         id: "how_know_needed",
-        label: "How do you know people need what you're making?",
+        label: "how do you know the world needs what you're making?",
         type: "textarea",
         required: true,
-        placeholder: "What evidence do you have?",
+        placeholder: "what evidence do you have?",
       },
     ],
   },
@@ -99,10 +102,10 @@ export const SECTIONS: Section[] = [
     questions: [
       {
         id: "how_far",
-        label: "How far along is your project?",
+        label: "have you hit any milestones yet? if so, which ones?",
         type: "textarea",
         required: true,
-        placeholder: "Describe your current stage...",
+        placeholder: "describe your most significant milestones...",
       },
       {
         id: "duration",
@@ -113,15 +116,35 @@ export const SECTIONS: Section[] = [
       },
       {
         id: "has_users",
-        label: "Are people using your project?",
+        label: "are people using what you're building?",
         type: "yes_no",
         required: true,
       },
       {
+        id: "user_count",
+        label: "roughly how many?",
+        type: "short_text",
+        required: true,
+        conditional: {
+          dependsOn: "has_users",
+          showWhen: "yes",
+        },
+      },
+      {
         id: "has_revenue",
-        label: "Do you have revenue?",
+        label: "do you have revenue?",
         type: "yes_no",
         required: true,
+      },
+      {
+        id: "revenue_amount",
+        label: "roughly how much?",
+        type: "short_text",
+        required: true,
+        conditional: {
+          dependsOn: "has_revenue",
+          showWhen: "yes",
+        },
       },
     ],
   },
@@ -131,20 +154,13 @@ export const SECTIONS: Section[] = [
     questions: [
       {
         id: "competitors",
-        label:
-          "Who is another person or group trying to solve this problem?",
+        label: "who else is doing something similar to you?",
         type: "textarea",
         required: true,
       },
       {
         id: "unique_insight",
-        label: "What do you understand that they don't?",
-        type: "textarea",
-        required: true,
-      },
-      {
-        id: "world_impact",
-        label: "How will this positively impact the world?",
+        label: "what do you understand that they don't?",
         type: "textarea",
         required: true,
       },
@@ -157,20 +173,20 @@ export const SECTIONS: Section[] = [
       {
         id: "what_need",
         label:
-          "What do you need most right now to make meaningful progress on this project?",
+          "what do you need most right now to make meaningful progress on your work?",
         type: "textarea",
         required: true,
       },
       {
         id: "how_helps",
         label:
-          "How can the Residency help you move the needle on that goal?",
+          "how can the residency help you move the needle on your goals?",
         type: "textarea",
         required: true,
       },
       {
         id: "looking_cofounder",
-        label: "Are you looking for a cofounder?",
+        label: "are you looking for a cofounder?",
         type: "yes_no",
         required: true,
       },
@@ -260,14 +276,8 @@ export const SECTIONS: Section[] = [
     title: "How You Found Us",
     questions: [
       {
-        id: "what_convinced",
-        label: "What convinced you to apply? Did someone encourage you?",
-        type: "textarea",
-        required: true,
-      },
-      {
         id: "how_heard",
-        label: "How did you hear about the Residency?",
+        label: "how did you hear about the residency?",
         type: "select",
         required: true,
         options: [
@@ -278,6 +288,12 @@ export const SECTIONS: Section[] = [
           { label: "Word of Mouth", value: "word_of_mouth" },
           { label: "Other", value: "other" },
         ],
+      },
+      {
+        id: "what_convinced",
+        label: "what convinced you to apply? did someone encourage you?",
+        type: "textarea",
+        required: true,
       },
     ],
   },

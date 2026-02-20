@@ -7,7 +7,7 @@ test.describe("Apply form", () => {
     await page.waitForSelector('input[type="email"]', { timeout: 30000 });
 
     // Form sections should be dimmed/disabled before email
-    const formArea = page.locator("div.opacity-50.pointer-events-none").first();
+    const formArea = page.locator("div.blur-\\[2px\\].pointer-events-none").first();
     await expect(formArea).toBeVisible();
 
     // Enter email
@@ -39,7 +39,7 @@ test.describe("Apply form", () => {
     await enterEmail(page, email);
 
     const sections = [
-      "about-you", "the-project", "why-this-idea", "progress",
+      "about-you", "your-work", "why-this-idea", "progress",
       "competition", "the-residency", "funding", "past-programs", "how-found-us",
     ];
 
@@ -88,7 +88,7 @@ test.describe("Apply form", () => {
     await enterEmail(page, email);
 
     // Pitch field is 50 char max
-    const pitchSection = page.locator("section#the-project");
+    const pitchSection = page.locator("section#your-work");
     await pitchSection.scrollIntoViewIfNeeded();
     const pitchInput = pitchSection.locator("input").first();
     await pitchInput.fill("A".repeat(60));

@@ -12,7 +12,7 @@ test.describe("Validation", () => {
 
     // Should see validation error, not the freeze warning
     await expect(page.locator("text=please answer all required questions")).toBeVisible();
-    await expect(page.locator("text=ready to see your matches?")).not.toBeVisible();
+    await expect(page.locator("text=are you ready to move to the next section")).not.toBeVisible();
   });
 
   test("next button shows freeze warning when all fields filled", async ({ page }) => {
@@ -21,7 +21,9 @@ test.describe("Validation", () => {
 
     await setupWithAppId(page, app.id, "/apply");
 
-    // Wait for answers to actually load from server (not just the section to render)
+    // Wait for answers to load from server (welcome message appears after load completes)
+    await expect(page.locator("text=picked up where you left off")).toBeVisible({ timeout: 30000 });
+
     // The first textarea (accomplishments) should have a non-empty value
     const firstTextarea = page.locator("textarea").first();
     await expect(firstTextarea).not.toHaveValue("", { timeout: 15000 });
@@ -30,6 +32,6 @@ test.describe("Validation", () => {
     await nextBtn.scrollIntoViewIfNeeded();
     await nextBtn.click();
 
-    await expect(page.locator("text=ready to see your matches?")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("text=are you ready to move to the next section of the application?")).toBeVisible({ timeout: 10000 });
   });
 });

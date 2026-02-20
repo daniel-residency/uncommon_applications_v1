@@ -13,6 +13,7 @@ export default function ApplyPage() {
   const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
   const [showFreezeWarning, setShowFreezeWarning] = useState(false);
   const [freezing, setFreezing] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Email inline state (shown when no application_id yet)
   const [email, setEmail] = useState("");
@@ -26,6 +27,17 @@ export default function ApplyPage() {
 
   const { application, answers, loading, saving, lastSaved, updateAnswer, saveNow, setAnswers } =
     useApplication(appId);
+
+  const handleAnswerChange = useCallback((questionId: string, value: string, sectionId: string) => {
+    updateAnswer(questionId, value, sectionId);
+    for (const section of SECTIONS) {
+      for (const q of section.questions) {
+        if (q.conditional?.dependsOn === questionId && value !== q.conditional.showWhen) {
+          updateAnswer(q.id, "", sectionId);
+        }
+      }
+    }
+  }, [updateAnswer]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,9 +155,7 @@ export default function ApplyPage() {
     );
   }
 
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-
-  const getUnansweredRequired = useCallback(() => {
+  const getUnansweredRequired = () => {
     const missing: string[] = [];
     for (const section of SECTIONS) {
       for (const q of section.questions) {
@@ -160,7 +170,7 @@ export default function ApplyPage() {
       }
     }
     return missing;
-  }, [answers]);
+  };
 
   const formDisabled = !appId;
 
@@ -170,7 +180,7 @@ export default function ApplyPage() {
       <nav className="w-[220px] shrink-0 sticky top-0 h-screen overflow-y-auto px-6 py-8 border-r border-border-light">
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-1">
-            <img src="/logo.png" alt="the residency" className="h-5 w-auto" />
+            <img src="/logo.svg" alt="the residency" className="h-8 w-auto" />
           </div>
         </div>
 
@@ -262,7 +272,7 @@ export default function ApplyPage() {
         )}
 
         {/* all sections */}
-        <div className={formDisabled ? "opacity-50 pointer-events-none select-none" : ""}>
+        <div className={formDisabled ? "blur-[2px] pointer-events-none select-none" : ""}>
           {SECTIONS.map((section, sectionIdx) => (
             <div key={section.id}>
               {sectionIdx > 0 && <div className="section-divider" />}
@@ -278,8 +288,9 @@ export default function ApplyPage() {
                       key={question.id}
                       question={question}
                       value={answers[question.id] || ""}
-                      onChange={(value) => updateAnswer(question.id, value, section.id)}
+                      onChange={(value) => handleAnswerChange(question.id, value, section.id)}
                       allAnswers={answers}
+                      error={validationErrors.includes(question.id)}
                     />
                   ))}
                 </div>
@@ -320,25 +331,20 @@ export default function ApplyPage() {
                 )}
               </div>
             ) : (
-              <div className="p-6 rounded-xl border border-border bg-white/40">
-                <p className="text-sm text-ink mb-2 font-semibold lowercase">
-                  ready to see your matches?
+              <div className="p-6 rounded-xl border border-border bg-white/40 text-center">
+                <p className="text-sm text-ink mb-4 lowercase">
+                  are you ready to move to the next section of the application?
                 </p>
-                <p className="text-xs text-mid-gray mb-5 lowercase leading-relaxed">
-                  your application answers will be locked and our AI will match you with the
-                  best homes for your project. after matching, you&apos;ll answer a few questions
-                  from each home before submitting.
-                </p>
-                <div className="flex gap-3">
+                <div className="flex justify-center gap-3">
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setShowFreezeWarning(false)}
                   >
-                    keep editing
+                    not yet
                   </Button>
                   <Button size="sm" onClick={handleFreeze} loading={freezing}>
-                    see my matches
+                    yes, match me
                   </Button>
                 </div>
               </div>

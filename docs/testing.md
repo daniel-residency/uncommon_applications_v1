@@ -41,7 +41,7 @@ The Playwright config (`playwright.config.ts`) automatically starts the dev serv
 | `navigation.spec.ts` | Sidebar click-to-scroll, scroll-to-highlight, hash navigation, logo display |
 | `auto-save.spec.ts` | localStorage and server auto-save debouncing behavior |
 | `resume-application.spec.ts` | Returning user resumes with pre-filled answers |
-| `conditional-questions.spec.ts` | Questions that show/hide based on other answers |
+| `conditional-questions.spec.ts` | Questions that show/hide based on other answers (including `user_count`/`revenue_amount` conditional follow-ups) |
 | `frozen-state.spec.ts` | Frozen application state — redirects and locked answers |
 | `matching-flow.spec.ts` | AI matching trigger, freeze warning, loading animation |
 | `home-questions.spec.ts` | Home-specific questions shown after matching |
